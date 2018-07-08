@@ -46,13 +46,13 @@ from torch.autograd import Variable
 
 
 class ResBlock(nn.Module):
-    def __init__(self, ni, nf, kernel_size=3):
+    def __init__(self, ni, nf, stride=2, kernel_size=3):
         super(ResLayer, self).__init__()
 
-        self.conv1 = nn.Conv2d(ni, nf,
-                kernel_size=kernel_size, padding=1)
-        self.conv2 = nn.Conv2d(nf, nf,
-                kernel_size=kernel_size, padding=1)
+        self.conv1 = nn.Conv2d(ni, nf, stride=stride, 
+                kernel_size = kernel_size, padding=1)
+        self.conv2 = nn.Conv2d(nf, nf, stride=stride, 
+                kernel_size = kernel_size, padding=1)
 
         self.bn1 = nn.BatchNorm2d(nf)
         self.bn2 = nn.BatchNorm2d(nf)
@@ -65,40 +65,39 @@ class ResBlock(nn.Module):
 
 
 class DQN(nn.Module):
-    def __init__(self, game, args):
+    def __init__(self, board):
         """
+        inputs: 
+        current hero
+        opponent hero
+        # current minions
+        # opponent minions
+        # current hand
+        # board features
+        output_size = length of array of available actions
+        board = state.board
         layers = [16, 32, 64, 128, 256]
         """
-        self.state_size = game.getBoardSize()
-        self.args = args
-
         super(DQN, self).__init__()
+        self.state_size = board.state.size
 
         #first conv layer (input as state, feed into res layers)
-        self.conv1 = nn.Conv2d(4, 16, #append last three turns onto input as 3rd dim
+        self.conv1 = nn.Conv2d(4, 16, #append last two turns onto input as 3rd dim
             kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(16)
 
-        #residual layers (10)
+        #residual layers 
         self.layers1 = nn.ModuleList([ResBlock(layers[i], layers[i+1])
             for i in range(len(layers) - 1)])
         self.layers2 = nn.ModuleList([ResBlock(layers[i], layers[i+1])
             for i in range(len(layers) - 1)])
 
-        #policy head (output as action probabilities (size of actions))
-        self.pi_conv1 = nn.Conv2d(256, 8, kernel_size=1)
-        self.pi_bn1 = nn.BatchNorm2d(8)
-        self.pi_fc1 = nn.Linear(19, 8) #!!!!output must be resized to 19x8
-        
-        #value head (output as state value [-1,1])
-        self.v_conv1 = nn.Conv2d(256, 4, kernel_size=1)
-        self.v_bn1 = nn.BatchNorm2d(2)
-        self.v_fc1 = nn.Linear(3*self.state_size, 64)
-        self.v_fc2 = nn.Linear(64, 1)
+        self.conv2 = nn.Conv2d(256, 32, kernel_size=1)
+        self.bn2 = nn.BatchNorm2d(32)
+        self.fc1 = nn.Linear(32, 1)
 
     def forward(self, state_input):
         #train conv layer --> feed into res layers, 
-        #pass into action and value seperately and return
 
         x = F.relu(self.bn1(self.conv1(state_input))) #convlayer of state into bn into relu
 
@@ -106,15 +105,7 @@ class DQN(nn.Module):
         for l,l2 in zip(self.layers1, self.layers2):
             x = l2(l(x)) #conv into bn into relu(orig + conv into bn) into each layer batch
 
-        #action policy head (action probabilities)
-        pi = F.relu(self.pi_bn1(self.pi_conv1(x))) #feed resnet into policy head
-        pi = pi.view(-1, 19)
-        pi = F.log_softmax((self.pi_fc1(pi)))
+        #return predictions
+        x = self.fc1(self.bn1(self.conv2(x)))
 
-        #value head (score of board state)
-        v = F.relu(self.v_bn1(self.v_conv1(x))) #feed resnet into value head
-        v = v.view(-1, 3*self.state_size)
-        v = F.relu(self.v_fc1(v))
-        v = F.tanh(self.v_fc2(v))
-
-        return pi, v
+        return x
