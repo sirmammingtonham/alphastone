@@ -18,12 +18,12 @@ class Game():
     two-player, adversarial and turn-based.
 
     Use 1 for player1 and -1 for player2.
-    19 possible actions per move, and 8 possible targets per action
+    21 possible actions per move, and 8 possible targets per action + 1 if no targets
     is_basic = True initializes game between priest and rogue only
     """
     
-    def __init__(self, num_actions=19, is_basic=True):
-        self.num_actions = num_actions
+    def __init__(self, is_basic=True):
+        self.num_actions = 21
         self.players = ['player1', 'player2']
         self.is_basic = is_basic
 

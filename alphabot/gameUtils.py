@@ -17,14 +17,14 @@ class Board():
     """
     
     def __init__(self):
-        self.num_actions = 19
+        self.num_actions = 23
         self.players = ['player1', 'player2']
         self.is_basic = True
 
-    def init_envi(self):
+    def initEnvi(self):
         cards.db.initialize()
 
-    def init_game(self):
+    def initGame(self):
         if self.is_basic: #create quick simple game
             p1 = 6 #priest
             p2 = 7 #rogue
@@ -44,111 +44,44 @@ class Board():
             player.choice.choose(*cards_to_mulligan)
 
         return game
+
     def getValidMoves(self, player):
-        actions = np.zeros(152, dtype=np.int32)
+        actions = np.zeros((21,9))
 
         #If the player is being given a choice, return only valid choices
         if player.choice:
             for card in player.choice.cards:
-                actions.append(("choose", card, None))
-
-        else:
-            # add cards in hand
-            targetcount = 8
-            for index, card in enumerate(player.hand):
-                actions[index+targetcount] = 1
-                targetcount += 9
-                if card.is_playable():
-                    # summonable minions (note some require a target on play)
-                    if card.type == 4:
-                        if card.requires_target():
-                            for target in card.targets:
-                                actions.append(("summon", index, target))
-                        else:
-                            actions.append(("summon", index, None, None))
-                    # playable spells and weapons
-                    elif card.requires_target():
-                        for target in card.targets:
-                            actions.append(("spell", index, target))
-                    else:
-                        actions.append(("spell", index, None))
-            # add targets avalible to minions that can attack
-            for position, minion in enumerate(player.field):
-                if minion.can_attack():
-                    for target in minion.attack_targets:
-                        actions.append(("attack", position, target))
-            # add hero power and targets if applicable
-            if player.hero.power.is_usable():
-                if player.hero.power.requires_target():
-                    for target in player.hero.power.targets:
-                        actions.append(("hero_power", None, target))
-                else:
-                    actions.append(("hero_power", None, None))
-            # add hero attacking if applicable
-            if player.hero.can_attack():
-                for target in player.hero.attack_targets:
-                    actions.append(("hero_attack", None, target))
-            # add end turn
-            actions.append(("end_turn", None, None))
-            self.actions = actions
-        return actions
-
-    def getActions(self, player):
-        """
-        generate a list of tuples representing all valid actions
-        format:
-            (actiontype, index, target)
-        card.requires_target!!
-        """
-        actions = []
-
-        #If the player is being given a choice, return only valid choices
-        if player.choice:
-            for card in player.choice.cards:
-                actions.append(("choose", card, None))
+                actions[20, card] = 1
+                #actions.append(("choose", card, None))
 
         else:
             # add cards in hand
             for index, card in enumerate(player.hand):
                 if card.is_playable():
-                    # summonable minions (note some require a target on play)
-                    if card.type == 4:
-                        if card.requires_target():
-                            for target in card.targets:
-                                actions.append(("summon", index, target))
-                        else:
-                            actions.append(("summon", index, None, None))
-                    # playable spells and weapons
-                    elif card.requires_target():
+                    if card.requires_target():
                         for target in card.targets:
-                            actions.append(("spell", index, target))
+                            actions[index, target] = 1
                     else:
-                        actions.append(("spell", index, None))
-            # add targets avalible to minions that can attack
+                        actions[index, 8] = 1
+            # add targets available to minions that can attack
             for position, minion in enumerate(player.field):
                 if minion.can_attack():
                     for target in minion.attack_targets:
-                        actions.append(("attack", position, target))
+                        actions[position+10, target] = 1
             # add hero power and targets if applicable
             if player.hero.power.is_usable():
                 if player.hero.power.requires_target():
                     for target in player.hero.power.targets:
-                        actions.append(("hero_power", None, target))
+                        actions[17, target] = 1
                 else:
-                    actions.append(("hero_power", None, None))
+                    actions.[17, 8] = 1
             # add hero attacking if applicable
             if player.hero.can_attack():
                 for target in player.hero.attack_targets:
-                    actions.append(("hero_attack", None, target))
+                    actions.[18, target] = 1
             # add end turn
-            actions.append(("end_turn", None, None))
-            self.actions = actions
+            actions[19] = 1
         return actions
-
-    def getActionSize(self):
-        self.action_size = len(self.actions)
-        return self.action_size
-
 
     def performAction(self, a, player, game):
         """
@@ -159,38 +92,42 @@ class Board():
         """
 
         try:
-
-            if a[0] == "summon":
-                if a[2] is None:
-                    player.hand[a[1]].play()
-                else:
-                    player.hand[a[1]].play(a[2])
-            elif a[0] == "spell":
-                if a[2] is None:
-                    player.hand[a[1]].play()
-                else:
-                    player.hand[a[1]].play(a[2])
-            elif a[0] == "attack":
-                player.field[a[1]].attack(a[2])
-            elif a[0] == "hero_power":
-                if a[2] is None:
-                    player.hero.power.use()
-                else:
-                    player.hero.power.use(a[2])
-            elif a[0] == "hero_attack":
-                player.hero.attack(a[2])
-            elif a[0] == "end_turn":
-                game.end_turn()
-            elif a[0] == "choose":
-                #print("Player choosing card %r, " % a[1])
-                player.choice.choose(a[1])
-            else:
-                raise UnhandledAction
-        except UnhandledAction:
-            print("Attempted to take an inappropriate action!\n")
-            print(a)
-        except GameOver:
-            raise
+            for i in range(0, 20):
+                if a[i] != 0:
+                    if i in range(0, 9):
+                        for k in range(0, 7):
+                            if a[k] != 0:
+                                player.hand[a[i]].play([a[k]])
+                        if a[8] != 0:
+                            player.hand[a[i]].play()
+                    elif i in range(10, 16):
+                        for k in range(0, 7):
+                            if a[k] != 0:
+                                player.field[a[i]].attack(a[k])
+                    elif i == 17:
+                        for k in range(0, 7):
+                            if a[k] != 0:
+                                player.hero.power.use(a[k])
+                        if a[8] != 0:
+                            player.hero.power.use()
+                    elif i == 18:
+                        for k in range(0, 7):
+                            if a[k] != 0:
+                                player.hero.attack(a[k])          
+                    elif i == 19:
+                        if a[19] == 1:
+                            game.end_turn()        
+                    elif i == 20:
+                        for k in range(0, 2):
+                            if a[k] != 0:
+                                player.choice.choose(a[k])
+                    else:
+                        raise UnhandledAction
+                except UnhandledAction:
+                    print("Attempted to take an inappropriate action!\n")
+                    print(a)
+                except GameOver:
+                    raise
 
 
     def getState(self, game, player):
