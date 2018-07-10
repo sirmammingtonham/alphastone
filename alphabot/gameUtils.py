@@ -78,7 +78,7 @@ class Board():
             # add hero attacking if applicable
             if player.hero.can_attack():
                 for target in player.hero.attack_targets:
-                    actions.[18, target] = 1
+                    actions[18, target] = 1
             # add end turn
             actions[19] = 1
         return actions
