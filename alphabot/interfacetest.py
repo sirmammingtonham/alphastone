@@ -10,20 +10,66 @@ from hearthstone.enums import CardClass, CardType
 from .exceptions import UnhandledAction
 
 class Game():
-    def __init__(self, is_basic=True):
-        pass
-
-    @classmethod
-    def from_bool(cls, v):
-        if v == True:
-            return 1.0
-        else:
-            return -1.0
+    def __init__(self, num_actions=19, is_basic=True):
+        self.num_actions = num_actions
             
-    def get_hero_data(self):
+    def getInitBoard(self):
     	pass
 
-    def getActionSize
+    def getBoardSize(self):
+        pass
+
+    def getActionSize(self):
+        return self.num_actions
+
+    def getNextState(self, board, player, action):
+        pass
+
+    
+    def perform_action(self, a, player, game):
+    """
+    utilty to convert an action tuple
+    into an action input
+    Args:
+        a, a tuple representing (action, index, target)
+    """
+
+    try:
+
+        if a[0] == "summon":
+            if a[2] is None:
+                player.hand[a[1]].play()
+            else:
+                player.hand[a[1]].play(a[2])
+        elif a[0] == "spell":
+            if a[2] is None:
+                player.hand[a[1]].play()
+            else:
+                player.hand[a[1]].play(a[2])
+        elif a[0] == "attack":
+            player.field[a[1]].attack(a[2])
+        elif a[0] == "hero_power":
+            if a[2] is None:
+                player.hero.power.use()
+            else:
+                player.hero.power.use(a[2])
+        elif a[0] == "hero_attack":
+            player.hero.attack(a[2])
+        elif a[0] == "end_turn":
+            game.end_turn()
+        elif a[0] == "choose":
+            #print("Player choosing card %r, " % a[1])
+            player.choice.choose(a[1])
+        else:
+            raise UnhandledAction
+    except UnhandledAction:
+        print("Attempted to take an inappropriate action!\n")
+        print(a)
+    except GameOver:
+        raise
+
+
+
 
     def get_state(self):
         state = []

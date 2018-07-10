@@ -1,3 +1,13 @@
+'''
+neural net output as follows:
+22x8 2d tensor = a
+    a[0][0-9] encode for playing card in hand in position 
+    a[0][10-16] encode for attacking with minion at position
+    a[0][17] encode for hero power
+    a[0][18] encode for end turn
+    a[0][19-21] encode for card index when given choice???
+    a[1][0-7] encode for attacking enemy at position
+'''
 import sys
 sys.path.append('..')
 from utils import *
