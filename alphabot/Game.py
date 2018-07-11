@@ -31,6 +31,8 @@ class Game():
         cards.db.initialize()
 
     def init_game(self):
+        self.init_envi()
+        
         if self.is_basic: #create quick simple game
             p1 = 6 #priest
             p2 = 7 #rogue
@@ -79,18 +81,22 @@ class Game():
             nextBoard: board after applying action
             nextPlayer: player who plays in the next turn (should be -player)
 
-        """
-        b = copy.deepcopy(Board())
-        if player == 1:
-            current_player = b.player[0]
-        elif player == -1:
-            current_player = b.player[1]
+            all actions executed by copy_player to preserve new game
 
-        b.performAction(action) ##update this function to support new 19x8 action type
+        """
+        origb = Board()
+        players = copy.deepcopy(origb.players)
+        if player == 1:
+            current_player = players[0]
+        elif player == -1:
+            current_player = player[1]
+
+        b.performAction(action, current_player) ##update this function to support new 19x8 action type
         next_state = b.getState(b, current_player) ###need to figure out what the game object is
         return (next_state, -player)
 
-    def getValidMoves(self, board, player):
+    def getValidMoves(self, #board, 
+        player):
         """
         Input:
             board: current board
@@ -101,14 +107,17 @@ class Game():
                         moves that are valid from the current board and player,
                         0 for invalid moves
         """
+        origb = Board()
         if player == 1:
-            current_player = self.player[0]
+            current_player = origb.players[0]
         elif player == -1:
-            current_player = self.player[1]
+            current_player = origb.players[1]
+        return Board.getValidMoves(current_player)
 
 
 
-    def getGameEnded(self, board, player):
+    def getGameEnded(self, #board, 
+        player):
         """
         Input:
             board: current board
@@ -132,7 +141,8 @@ class Game():
             return 0.00001
         return 0
 
-    def getCanonicalForm(self, board, player):
+    def getCanonicalForm(self, #board, 
+        player):
         """
         Input:
             board: current board
@@ -146,9 +156,15 @@ class Game():
                             board as is. When the player is black, we can invert
                             the colors and return the board.
         """
-        pass
+        origb = Board()
+        if player == 1:
+            current_player = origb.players[0]
+        elif player == -1:
+            current_player = origb.players[1]
+        
+        return Board().getState(current_player)
 
-    def getSymmetries(self, board, pi):
+    def getSymmetries(self, state, pi):
         """
         Input:
             board: current board
@@ -159,15 +175,27 @@ class Game():
                        form of the board and the corresponding pi vector. This
                        is used when training the neural network from examples.
         """
-        pass
+        assert(len(pi) == len(state))
+        pi_board = np.reshape(pi[:-1], (21, 9))
+        l = []
 
-    def stringRepresentation(self, board):
+        for i in range(1, 5):
+            for j in [True, False]:
+                newS = np.rot90(state, i)
+                newPi = np.rot90(pi_board, i)
+                if j:
+                    newS = np.fliplr(newS)
+                    newPi = np.fliplr(newPi)
+                l += [(newS, list(newPi.ravel()) + [pi[-1]])]
+        return l
+
+    def stringRepresentation(self, state):
         """
         Input:
-            board: current board
+            state: np array of state
 
         Returns:
             boardString: a quick conversion of board to a string format.
                          Required by MCTS for hashing.
         """
-        pass
+        return state.tostring()

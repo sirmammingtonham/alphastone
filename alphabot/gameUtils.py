@@ -7,7 +7,6 @@ from fireplace.utils import random_draft
 from fireplace import cards
 from fireplace.exceptions import GameOver, InvalidAction
 from hearthstone.enums import CardClass, CardType
-from .gameUtils import Board
 from .exceptions import UnhandledAction
 
 class Board():
@@ -66,18 +65,18 @@ class Board():
             # add targets available to minions that can attack
             for position, minion in enumerate(player.field):
                 if minion.can_attack():
-                    for target in minion.attack_targets:
+                    for index, target in enumerate(minion.attack_targets):
                         actions[position+10, target] = 1
             # add hero power and targets if applicable
             if player.hero.power.is_usable():
                 if player.hero.power.requires_target():
-                    for target in player.hero.power.targets:
-                        actions[17, target] = 1
+                    for index, target in enumerate(player.hero.power.targets):
+                        actions[17, index] = 1
                 else:
-                    actions.[17, 8] = 1
+                    actions[17, 8] = 1
             # add hero attacking if applicable
             if player.hero.can_attack():
-                for target in player.hero.attack_targets:
+                for index, target in enumerate(player.hero.attack_targets):
                     actions[18, target] = 1
             # add end turn
             actions[19] = 1
@@ -88,47 +87,36 @@ class Board():
         utilty to convert an action tuple
         into an action input
         Args:
-            a, a tuple representing (action, index, target)
+            a, a tuple representing index of action
+            player, 
+            game,
         """
-
         try:
-            for i in range(0, 20):
-                if a[i] != 0:
-                    if i in range(0, 9):
-                        for k in range(0, 7):
-                            if a[k] != 0:
-                                player.hand[a[i]].play([a[k]])
-                        if a[8] != 0:
-                            player.hand[a[i]].play()
-                    elif i in range(10, 16):
-                        for k in range(0, 7):
-                            if a[k] != 0:
-                                player.field[a[i]].attack(a[k])
-                    elif i == 17:
-                        for k in range(0, 7):
-                            if a[k] != 0:
-                                player.hero.power.use(a[k])
-                        if a[8] != 0:
-                            player.hero.power.use()
-                    elif i == 18:
-                        for k in range(0, 7):
-                            if a[k] != 0:
-                                player.hero.attack(a[k])          
-                    elif i == 19:
-                        if a[19] == 1:
-                            game.end_turn()        
-                    elif i == 20:
-                        for k in range(0, 2):
-                            if a[k] != 0:
-                                player.choice.choose(a[k])
-                    else:
-                        raise UnhandledAction
-                except UnhandledAction:
-                    print("Attempted to take an inappropriate action!\n")
-                    print(a)
-                except GameOver:
-                    raise
-
+            if 0 <= a[0] <= 9:
+                if a[1] == 0:
+                    player.hand[a[0]].play(a[1])
+                else:
+                    player.hand[a[0]].play()
+            elif 10 <= a[0] <= 16:
+                player.field[a[0]].attack(a[1])
+            elif a[0] == 17:
+                if a[1] == 0:
+                    player.hero.power.use([a[1]])
+                else:
+                    player.hero.power.use()
+            elif a[0] == 18:
+                player.hero.attack(a[1])
+            elif a[0] == 19:
+                game.end_turn()
+            elif a[0] == 20:
+                player.choice.choose(a[1])
+            else:
+                raise UnhandledAction
+        except UnhandledAction:
+            print("Attempted to take an inappropriate action!\n")
+            print(a)
+        except GameOver:
+            raise
 
     def getState(self, game, player):
         """
@@ -140,7 +128,6 @@ class Board():
             supplied game.
         """
         s = np.zeros(263, dtype=np.int32)
-        c = np.zeros(263, dtype=np.int32)
 
         p1 = player
         p2 = player.opponent
@@ -231,12 +218,7 @@ class Board():
                 s[i + 7] = 1 if p1.hand[j].type == 5 else 0
                 s[i + 8] = p1.hand[j].cost
             i += 9
-        self.state = np.append(c, s)
-        return self.state
+        state = np.append(c, s)
+        return state
         #     self.state = s
         # return self.state
-
-    def get_state_data(self):
-        state = []
-        self.get_actions()
-        pass
