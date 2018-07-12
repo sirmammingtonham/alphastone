@@ -24,6 +24,7 @@ class Board():
         cards.db.initialize()
 
     def initGame(self):
+        self.initEnvi()
         if self.is_basic: #create quick simple game
             p1 = 6 #priest
             p2 = 7 #rogue
@@ -41,6 +42,8 @@ class Board():
         for player in self.game.players:
             cards_to_mulligan = random.sample(player.choice.cards, 0)
             player.choice.choose(*cards_to_mulligan)
+
+        self.start_player = game.current_player
 
         return game
 
@@ -82,7 +85,7 @@ class Board():
             actions[19] = 1
         return actions
 
-    def performAction(self, a, player, game):
+    def performAction(self, a, player):
         """
         utilty to convert an action tuple
         into an action input
@@ -107,7 +110,7 @@ class Board():
             elif a[0] == 18:
                 player.hero.attack(a[1])
             elif a[0] == 19:
-                game.end_turn()
+                player.game.end_turn()
             elif a[0] == 20:
                 player.choice.choose(a[1])
             else:
@@ -118,7 +121,7 @@ class Board():
         except GameOver:
             raise
 
-    def getState(self, game, player):
+    def getState(self, player):
         """
         Args:
             game, the current game object
@@ -218,7 +221,6 @@ class Board():
                 s[i + 7] = 1 if p1.hand[j].type == 5 else 0
                 s[i + 8] = p1.hand[j].cost
             i += 9
-        state = np.append(c, s)
-        return state
+        return s
         #     self.state = s
         # return self.state

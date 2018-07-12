@@ -27,10 +27,10 @@ class Game():
         self.players = ['player1', 'player2']
         self.is_basic = is_basic
 
-    def init_envi(self):
+    def initEnvi(self):
         cards.db.initialize()
 
-    def init_game(self):
+    def initGame(self):
         self.init_envi()
         
         if self.is_basic: #create quick simple game
@@ -60,7 +60,7 @@ class Game():
                         that will be the input to your neural network)
         """
         b = Board()
-        return np.array(b.getState(game, player))#???
+        return b.getState(b.start_player)
 
     def getActionSize(self):
         """
@@ -68,7 +68,7 @@ class Game():
             actionSize: number of all possible actions
                 num_actions*8 targets, 152 total
         """
-        return [self.num_actions, 8]
+        return [self.num_actions, 9]
 
     def getNextState(self, player, action):
         """
@@ -84,12 +84,12 @@ class Game():
             all actions executed by copy_player to preserve new game
 
         """
-        origb = Board()
-        players = copy.deepcopy(origb.players)
+        b = Board()
+        copy_players = copy.deepcopy(b.players)
         if player == 1:
-            current_player = players[0]
+            current_player = copy_players[0]
         elif player == -1:
-            current_player = player[1]
+            current_player = copy_player[1]
 
         b.performAction(action, current_player) ##update this function to support new 19x8 action type
         next_state = b.getState(b, current_player) ###need to figure out what the game object is
@@ -107,17 +107,16 @@ class Game():
                         moves that are valid from the current board and player,
                         0 for invalid moves
         """
-        origb = Board()
+        b = Board()
         if player == 1:
-            current_player = origb.players[0]
+            current_player = b.players[0]
         elif player == -1:
-            current_player = origb.players[1]
-        return Board.getValidMoves(current_player)
+            current_player = b.players[1]
+        return b.getValidMoves(current_player)
 
 
 
-    def getGameEnded(self, #board, 
-        player):
+    def getGameEnded(self, player):
         """
         Input:
             board: current board
@@ -141,8 +140,7 @@ class Game():
             return 0.00001
         return 0
 
-    def getCanonicalForm(self, #board, 
-        player):
+    def getCanonicalForm(self, player):
         """
         Input:
             board: current board
@@ -156,13 +154,13 @@ class Game():
                             board as is. When the player is black, we can invert
                             the colors and return the board.
         """
-        origb = Board()
+        b = Board()
         if player == 1:
-            current_player = origb.players[0]
+            current_player = b.players[0]
         elif player == -1:
-            current_player = origb.players[1]
+            current_player = b.players[1]
         
-        return Board().getState(current_player)
+        return b.getState(current_player)
 
     def getSymmetries(self, state, pi):
         """
