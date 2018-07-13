@@ -70,34 +70,35 @@ class Game():
         """
         return [self.num_actions, 9]
 
-    def getNextState(self, player, action):
+    def getNextState(self, game, player, action):
         """
         Input:
             board: current board (gameUtils)
             player: current player (1 or -1)
-            action: action taken by current player
+            action: action taken by current player 
+                (tuple representing index in action matrix)
 
         Returns:
             nextBoard: board after applying action
             nextPlayer: player who plays in the next turn (should be -player)
-
-            all actions executed by copy_player to preserve new game
+            all actions executed in copyg to preserve new game
 
         """
         b = Board()
+        copyg = copy.deepcopy(game)
         if player == 1:
             current_player = b.players[0]
         elif player == -1:
             current_player = b.players[1]
 
-        b.performAction(action, current_player) ##update this function to support new 19x8 action type
-        next_state = b.getState(b, current_player) ###need to figure out what the game object is
-        # return (b.game, -player)
+        b.performAction(copyg, action, current_player) ##update this function to support new 19x8 action type
+        next_state = b.getState(copyg, current_player) ###need to figure out what the game object is
+        return (next_state, -player)
 
-    def getValidMoves(self, player):
+    def getValidMoves(self, game, player):
         """
         Input:
-            board: current board
+            game: game (either copy or original)
             player: current player
 
         Returns:
@@ -110,11 +111,11 @@ class Game():
             current_player = b.players[0]
         elif player == -1:
             current_player = b.players[1]
-        return b.getValidMoves(current_player)
+        return b.getValidMoves(game, current_player)
 
 
 
-    def getGameEnded(self, player):
+    def getGameEnded(self, game, player):
         """
         Input:
             board: current board
@@ -130,11 +131,11 @@ class Game():
         elif player == -1:
             current_player = b.players[1]
 
-        if current_player.playstate == PlayState.WON:
+        if game.current_player.playstate == PlayState.WON:
             return 1
-        elif player.playstate == PlayState.LOST:
+        elif game.player.playstate == PlayState.LOST:
             return -1
-        elif player.PlayState == PlayState.TIED:
+        elif game.player.PlayState == PlayState.TIED:
             return 0.00001
         return 0
 
@@ -159,7 +160,6 @@ class Game():
             current_player = b.players[1]
         
         return b.getState(current_player)
-        # return b.game
 
     def getSymmetries(self, state, pi):
         """
@@ -186,7 +186,7 @@ class Game():
                 l += [(newS, list(newPi.ravel()) + [pi[-1]])]
         return l
 
-    def stringRepresentation(self, state):
+    def stringRepresentation(self, game):
         """
         Input:
             state: np array of state
@@ -195,4 +195,5 @@ class Game():
             boardString: a quick conversion of board to a string format.
                          Required by MCTS for hashing.
         """
+        state = getState(game)
         return state.tostring()

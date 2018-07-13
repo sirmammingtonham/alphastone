@@ -19,19 +19,19 @@ class MCTS():
         self.Es = {}        # stores game.getGameEnded ended for board s
         self.Vs = {}        # stores game.getValidMoves for board s
 
-    def getActionProb(self, canonicalBoard, temp=1):
+    def getActionProb(self, current_game, temp=1):
         """
         This function performs numMCTSSims simulations of MCTS starting from
-        canonicalBoard.
+        current_game.
 
         Returns:
             probs: a policy vector where the probability of the ith action is
                    proportional to Nsa[(s,a)]**(1./temp)
         """
         for i in range(self.args.numMCTSSims):
-            self.search(canonicalBoard)
+            self.search(current_game)
 
-        s = self.game.stringRepresentation(canonicalBoard)
+        s = self.game.stringRepresentation(current_game)
         counts = [self.Nsa[(s,a)] if (s,a) in self.Nsa else 0 for a in range(self.game.getActionSize())]
 
         if temp==0:
@@ -45,7 +45,7 @@ class MCTS():
         return probs
 
 
-    def search(self, state):
+    def search(self, current_game):
         """
         This function performs one iteration of MCTS. It is recursively called
         till a leaf node is found. The action chosen at each node is one that
@@ -62,21 +62,21 @@ class MCTS():
         state for the current player, then its value is -v for the other player.
 
         Returns:
-            v: the negative of the value of the current state
+            v: the negative of the value of the current current_game
         """
 
-        s = self.game.stringRepresentation(state)
+        s = self.game.stringRepresentation(current_game)
 
         if s not in self.Es:
-            self.Es[s] = self.game.getGameEnded(1)
+            self.Es[s] = self.game.getGameEnded(current_game, 1)
         if self.Es[s]!=0:
             # terminal node
             return -self.Es[s]
 
         if s not in self.Ps:
             # leaf node
-            self.Ps[s], v = self.nnet.predict(state)
-            valids = self.game.getValidMoves(1)
+            self.Ps[s], v = self.nnet.predict(self.game.getState(current_game))
+            valids = self.game.getValidMoves(current_game, 1)
             self.Ps[s] = self.Ps[s]*valids      # masking invalid moves
             sum_Ps_s = np.sum(self.Ps[s])
             if sum_Ps_s > 0:
@@ -111,9 +111,8 @@ class MCTS():
                     best_act = a
 
         a = best_act
-        next_s, next_player = self.game.getNextState(1, a)
-        next_s = self.game.getCanonicalForm(#next_s, 
-            next_player)
+        next_s, next_player = self.game.getNextState(current_game, 1, a)
+        next_s = self.game.getCanonicalForm(next_s, next_player)
 
         v = self.search(next_s)
 

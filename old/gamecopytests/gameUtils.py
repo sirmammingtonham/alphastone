@@ -35,8 +35,8 @@ class Board():
         deck2 = random_draft(CardClass(p2))
         self.players[0] = Player("Player1", deck1, CardClass(p1).default_hero)
         self.players[1] = Player("Player2", deck2, CardClass(p2).default_hero)
-        game = Game(players=self.players)
-        game.start()
+        self.game = Game(players=self.players)
+        self.game.start()
 
         #Skip mulligan for now
         for player in self.game.players:
@@ -45,21 +45,23 @@ class Board():
 
         self.start_player = game.current_player
 
-        self.game = game
         return self.game
 
-    def getValidMoves(self, player):
+    def getGame(self):
+        return self.game
+
+    def getValidMoves(self, game, player):
         actions = np.zeros((21,9))
 
         #If the player is being given a choice, return only valid choices
-        if player.choice:
-            for card in player.choice.cards:
+        if game.player.choice:
+            for card in game.player.choice.cards:
                 actions[20, card] = 1
                 #actions.append(("choose", card, None))
 
         else:
             # add cards in hand
-            for index, card in enumerate(player.hand):
+            for index, card in enumerate(game.player.hand):
                 if card.is_playable():
                     if card.requires_target():
                         for target in card.targets:
@@ -67,53 +69,53 @@ class Board():
                     else:
                         actions[index, 8] = 1
             # add targets available to minions that can attack
-            for position, minion in enumerate(player.field):
+            for position, minion in enumerate(game.player.field):
                 if minion.can_attack():
                     for index, target in enumerate(minion.attack_targets):
                         actions[position+10, target] = 1
             # add hero power and targets if applicable
-            if player.hero.power.is_usable():
-                if player.hero.power.requires_target():
-                    for index, target in enumerate(player.hero.power.targets):
+            if game.player.hero.power.is_usable():
+                if game.player.hero.power.requires_target():
+                    for index, target in enumerate(game.player.hero.power.targets):
                         actions[17, index] = 1
                 else:
                     actions[17, 8] = 1
             # add hero attacking if applicable
-            if player.hero.can_attack():
-                for index, target in enumerate(player.hero.attack_targets):
+            if game.player.hero.can_attack():
+                for index, target in enumerate(game.player.hero.attack_targets):
                     actions[18, target] = 1
             # add end turn
             actions[19] = 1
         return actions
 
-    def performAction(self, a, player):
+    def performAction(self, game, a, player):
         """
         utilty to convert an action tuple
         into an action input
         Args:
             a, a tuple representing index of action
-            player, 
-            game,
+            player, current player
+            game, game object (either actual game or copy)
         """
         try:
             if 0 <= a[0] <= 9:
                 if a[1] == 0:
-                    player.hand[a[0]].play(a[1])
+                    game.player.hand[a[0]].play(a[1])
                 else:
-                    player.hand[a[0]].play()
+                    game.player.hand[a[0]].play()
             elif 10 <= a[0] <= 16:
                 player.field[a[0]].attack(a[1])
             elif a[0] == 17:
                 if a[1] == 0:
-                    player.hero.power.use([a[1]])
+                    game.player.hero.power.use([a[1]])
                 else:
-                    player.hero.power.use()
+                    game.player.hero.power.use()
             elif a[0] == 18:
-                player.hero.attack(a[1])
+                game.player.hero.attack(a[1])
             elif a[0] == 19:
-                player.game.end_turn()
+                game.end_turn()
             elif a[0] == 20:
-                player.choice.choose(a[1])
+                game.player.choice.choose(a[1])
             else:
                 raise UnhandledAction
         except UnhandledAction:
@@ -122,7 +124,7 @@ class Board():
         except GameOver:
             raise
 
-    def getState(self, player):
+    def getState(self, game, player):
         """
         Args:
             game, the current game object
@@ -133,8 +135,8 @@ class Board():
         """
         s = np.zeros(263, dtype=np.int32)
 
-        p1 = player
-        p2 = player.opponent
+        p1 = game.player
+        p2 = game.player.opponent
 
         #0-9 player1 class, we subtract 1 here because the classes are from 1 to 10
         s[p1.hero.card_class-1] = 1
