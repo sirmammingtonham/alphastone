@@ -19,7 +19,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
-from .alphanet import DQN as nnet
+from alphanet import DQN as nnet
 
 args = dotdict({
     'lr': 0.001,

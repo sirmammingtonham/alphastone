@@ -7,7 +7,7 @@ from fireplace.utils import random_draft
 from fireplace import cards
 from fireplace.exceptions import GameOver, InvalidAction
 from hearthstone.enums import CardClass, CardType
-from .exceptions import UnhandledAction
+from exceptions import UnhandledAction
 
 class Board():
     """
@@ -19,6 +19,7 @@ class Board():
         self.num_actions = 23
         self.players = ['player1', 'player2']
         self.is_basic = True
+        self.game = None
 
     def initEnvi(self):
         cards.db.initialize()

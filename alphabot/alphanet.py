@@ -58,7 +58,7 @@ from torch.autograd import Variable
 
 class ResBlock(nn.Module):
     def __init__(self, ni, nf, kernel_size=3):
-        super(ResLayer, self).__init__()
+        super(ResBlock, self).__init__()
 
         self.conv1 = nn.Conv2d(ni, nf,
                 kernel_size=kernel_size, padding=1)
@@ -77,10 +77,10 @@ class ResBlock(nn.Module):
 
 class DQN(nn.Module):
     def __init__(self, game, args):
-        """
+
         layers = [16, 32, 64, 128, 256]
-        """
-        self.state_size = game.getBoardSize()
+
+        self.state_size = 263
         self.args = args
 
         super(DQN, self).__init__()
@@ -104,7 +104,7 @@ class DQN(nn.Module):
         #value head (output as state value [-1,1])
         self.v_conv1 = nn.Conv2d(256, 4, kernel_size=1)
         self.v_bn1 = nn.BatchNorm2d(2)
-        self.v_fc1 = nn.Linear(3*self.state_size, 64)
+        self.v_fc1 = nn.Linear(self.state_size, 64)
         self.v_fc2 = nn.Linear(64, 1)
 
     def forward(self, state_input):
@@ -124,7 +124,7 @@ class DQN(nn.Module):
 
         #value head (score of board state)
         v = F.relu(self.v_bn1(self.v_conv1(x))) #feed resnet into value head
-        v = v.view(-1, 3*self.state_size)
+        v = v.view(-1, self.state_size)
         v = F.relu(self.v_fc1(v))
         v = F.tanh(self.v_fc2(v))
 

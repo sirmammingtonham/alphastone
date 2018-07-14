@@ -8,10 +8,10 @@ from fireplace.utils import random_draft
 from fireplace import cards
 from fireplace.exceptions import GameOver, InvalidAction
 from hearthstone.enums import CardClass, CardType
-from .gameUtils import Board
-from .exceptions import UnhandledAction
+from gameUtils import Board
+from exceptions import UnhandledAction
 
-class Game():
+class YEET():
     """
     This class specifies the base Game class. To define your own game, subclass
     this class and implement the functions below. This works when the game is
