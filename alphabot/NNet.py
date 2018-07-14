@@ -19,7 +19,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
-from .OthelloNNet import OthelloNNet as onnet
+from .alphanet import DQN as nnet
 
 args = dotdict({
     'lr': 0.001,
@@ -32,8 +32,7 @@ args = dotdict({
 
 class NNetWrapper(NeuralNet):
     def __init__(self, game):
-        self.nnet = onnet(game, args)
-        self.board_x, self.board_y = game.getBoardSize()
+        self.nnet = nnet(game, args)
         self.action_size = game.getActionSize()
 
         if args.cuda:
@@ -41,7 +40,7 @@ class NNetWrapper(NeuralNet):
 
     def train(self, examples):
         """
-        examples: list of examples, each example is of form (board, pi, v)
+        examples: list of examples, each example is of form (state, pi, v)
         """
         optimizer = optim.Adam(self.nnet.parameters())
 
@@ -59,28 +58,28 @@ class NNetWrapper(NeuralNet):
 
             while batch_idx < int(len(examples)/args.batch_size):
                 sample_ids = np.random.randint(len(examples), size=args.batch_size)
-                boards, pis, vs = list(zip(*[examples[i] for i in sample_ids]))
-                boards = torch.FloatTensor(np.array(boards).astype(np.float64))
+                states, pis, vs = list(zip(*[examples[i] for i in sample_ids]))
+                states = torch.FloatTensor(np.array(states).astype(np.float64))
                 target_pis = torch.FloatTensor(np.array(pis))
                 target_vs = torch.FloatTensor(np.array(vs).astype(np.float64))
 
                 # predict
                 if args.cuda:
-                    boards, target_pis, target_vs = boards.contiguous().cuda(), target_pis.contiguous().cuda(), target_vs.contiguous().cuda()
-                boards, target_pis, target_vs = Variable(boards), Variable(target_pis), Variable(target_vs)
+                    states, target_pis, target_vs = states.contiguous().cuda(), target_pis.contiguous().cuda(), target_vs.contiguous().cuda()
+                states, target_pis, target_vs = Variable(states), Variable(target_pis), Variable(target_vs)
 
                 # measure data loading time
                 data_time.update(time.time() - end)
 
                 # compute output
-                out_pi, out_v = self.nnet(boards)
+                out_pi, out_v = self.nnet(states)
                 l_pi = self.loss_pi(target_pis, out_pi)
                 l_v = self.loss_v(target_vs, out_v)
                 total_loss = l_pi + l_v
 
                 # record loss
-                pi_losses.update(l_pi.data[0], boards.size(0))
-                v_losses.update(l_v.data[0], boards.size(0))
+                pi_losses.update(l_pi.data[0], states.size(0))
+                v_losses.update(l_v.data[0], states.size(0))
 
                 # compute gradient and do SGD step
                 optimizer.zero_grad()
@@ -107,21 +106,21 @@ class NNetWrapper(NeuralNet):
             bar.finish()
 
 
-    def predict(self, board):
+    def predict(self, state):
         """
-        board: np array with board
+        state: np array with state
         """
         # timing
         start = time.time()
 
         # preparing input
-        board = torch.FloatTensor(board.astype(np.float64))
-        if args.cuda: board = board.contiguous().cuda()
-        board = Variable(board, volatile=True)
-        board = board.view(1, self.board_x, self.board_y)
+        state = torch.FloatTensor(state.astype(np.float64))
+        if args.cuda: state = state.contiguous().cuda()
+        state = Variable(state, volatile=True)
+        # state = state.view(1, self.board_x, self.board_y)
 
         self.nnet.eval()
-        pi, v = self.nnet(board)
+        pi, v = self.nnet(state)
 
         #print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]

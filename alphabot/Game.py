@@ -53,14 +53,14 @@ class Game():
 
         return game
 
-    def getInitBoard(self):
+    def getInitGame(self):
         """
         Returns:
             startBoard: a representation of the board (ideally this is the form
                         that will be the input to your neural network)
         """
         b = Board()
-        return b.getState(b.start_player)
+        return b.game
 
     def getActionSize(self):
         """
@@ -92,7 +92,7 @@ class Game():
 
         b.performAction(action, current_player) ##update this function to support new 19x8 action type
         next_state = b.getState(b, current_player) ###need to figure out what the game object is
-        # return (b.game, -player)
+        return (b.game, -player)
 
     def getValidMoves(self, player):
         """
@@ -138,19 +138,14 @@ class Game():
             return 0.00001
         return 0
 
-    def getCanonicalForm(self, player):
+    def getState(self, player):
         """
         Input:
             board: current board
             player: current player (1 or -1)
 
         Returns:
-            canonicalBoard: returns canonical form of board. The canonical form
-                            should be independent of player. For e.g. in chess,
-                            the canonical form can be chosen to be from the pov
-                            of white. When the player is white, we can return
-                            board as is. When the player is black, we can invert
-                            the colors and return the board.
+            state: see gameUtils.getState for info
         """
         b = Board()
         if player == 1:
