@@ -7,25 +7,25 @@ from fireplace.utils import random_draft
 from fireplace import cards
 from fireplace.exceptions import GameOver, InvalidAction
 from hearthstone.enums import CardClass, CardType
-from exceptions import UnhandledAction
+from .exceptions import UnhandledAction
 
 class Board():
     """
     This class interacts with Game.py to initialize the game, 
     return states, and return actions
     """
-    
+    game = None
+    players = ['', '']
+
     def __init__(self):
         self.num_actions = 23
-        self.players = ['player1', 'player2']
         self.is_basic = True
-        self.game = None
 
     def initEnvi(self):
         cards.db.initialize()
 
     def initGame(self):
-        self.initEnvi()
+        cards.db.initialize()
         if self.is_basic: #create quick simple game
             p1 = 6 #priest
             p2 = 7 #rogue
@@ -34,20 +34,19 @@ class Board():
             p2 = random.randint(1, 9)
         deck1 = random_draft(CardClass(p1))
         deck2 = random_draft(CardClass(p2))
-        self.players[0] = Player("Player1", deck1, CardClass(p1).default_hero)
-        self.players[1] = Player("Player2", deck2, CardClass(p2).default_hero)
+        Board.players[0] = Player("Player1", deck1, CardClass(p1).default_hero)
+        Board.players[1] = Player("Player2", deck2, CardClass(p2).default_hero)
         game = Game(players=self.players)
         game.start()
 
         #Skip mulligan for now
-        for player in self.game.players:
+        for player in game.players:
             cards_to_mulligan = random.sample(player.choice.cards, 0)
             player.choice.choose(*cards_to_mulligan)
 
-        self.start_player = game.current_player
-
-        self.game = game
-        return self.game
+        # self.start_player = game.current_player
+        Board.game = game
+        return game
 
     def getValidMoves(self, player):
         actions = np.zeros((21,9))
@@ -224,5 +223,3 @@ class Board():
                 s[i + 8] = p1.hand[j].cost
             i += 9
         return s
-        #     self.state = s
-        # return self.state

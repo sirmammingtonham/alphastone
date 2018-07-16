@@ -7,9 +7,7 @@ import numpy as np
 import math
 import sys
 sys.path.append('../../')
-from utils import *
-from pytorch_classification.utils import Bar, AverageMeter
-from NeuralNet import NeuralNet
+from utils import Bar, AverageMeter, dotdict
 
 import argparse
 import torch
@@ -26,11 +24,11 @@ args = dotdict({
     'dropout': 0.3,
     'epochs': 10,
     'batch_size': 64,
-    'cuda': torch.cuda.is_available(),
+    'cuda': True,
     'num_channels': 512,
 })
 
-class NNetWrapper(NeuralNet):
+class NNetWrapper():
     def __init__(self, game):
         self.nnet = nnet(game, args)
         self.action_size = game.getActionSize()
@@ -114,7 +112,7 @@ class NNetWrapper(NeuralNet):
         start = time.time()
 
         # preparing input
-        state = torch.FloatTensor(state.astype(np.float64))
+        state = torch.FloatTensor(state.astype(np.float64)).unsqueeze(0).unsqueeze(0)
         if args.cuda: state = state.contiguous().cuda()
         state = Variable(state, volatile=True)
         # state = state.view(1, self.board_x, self.board_y)

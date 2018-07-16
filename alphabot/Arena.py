@@ -1,5 +1,5 @@
 import numpy as np
-from pytorch_classification.utils import Bar, AverageMeter
+from utils import Bar, AverageMeter
 import time
 
 class Arena():

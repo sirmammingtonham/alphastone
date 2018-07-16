@@ -8,8 +8,7 @@ from fireplace.utils import random_draft
 from fireplace import cards
 from fireplace.exceptions import GameOver, InvalidAction
 from hearthstone.enums import CardClass, CardType
-from gameUtils import Board
-from exceptions import UnhandledAction
+from utils import Board, UnhandledAction
 
 class YEET():
     """
@@ -27,32 +26,6 @@ class YEET():
         self.players = ['player1', 'player2']
         self.is_basic = is_basic
 
-    def initEnvi(self):
-        cards.db.initialize()
-
-    def initGame(self):
-        self.init_envi()
-        
-        if self.is_basic: #create quick simple game
-            p1 = 6 #priest
-            p2 = 7 #rogue
-        else:
-            p1 = random.randint(1, 9)
-            p2 = random.randint(1, 9)
-        deck1 = random_draft(CardClass(p1))
-        deck2 = random_draft(CardClass(p2))
-        self.players[0] = Player("Player1", deck1, CardClass(p1).default_hero)
-        self.players[1] = Player("Player2", deck2, CardClass(p2).default_hero)
-        game = Game(players=self.players)
-        game.start()
-
-        #Skip mulligan for now
-        for player in self.game.players:
-            cards_to_mulligan = random.sample(player.choice.cards, 0)
-            player.choice.choose(*cards_to_mulligan)
-
-        return game
-
     def getInitGame(self):
         """
         Returns:
@@ -60,6 +33,8 @@ class YEET():
                         that will be the input to your neural network)
         """
         b = Board()
+        b.initEnvi()
+        b.initGame()
         return b.game
 
     def getActionSize(self):
@@ -91,7 +66,7 @@ class YEET():
             current_player = b.players[1]
 
         b.performAction(action, current_player) ##update this function to support new 19x8 action type
-        next_state = b.getState(b, current_player) ###need to figure out what the game object is
+        next_state = b.getState(current_player) ###need to figure out what the game object is
         return (b.game, -player)
 
     def getValidMoves(self, player):
@@ -130,12 +105,12 @@ class YEET():
         elif player == -1:
             current_player = b.players[1]
 
-        if current_player.playstate == PlayState.WON:
+        if current_player.playstate == 4:
             return 1
-        elif player.playstate == PlayState.LOST:
+        elif current_player.playstate == 5:
             return -1
-        elif player.PlayState == PlayState.TIED:
-            return 0.00001
+        elif current_player.playstate == 6:
+            return 0.0001
         return 0
 
     def getState(self, player):

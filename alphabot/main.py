@@ -1,7 +1,7 @@
 from Coach import Coach
 from Game import YEET as Game
 from NNet import NNetWrapper as nn
-from utils import *
+from utils import dotdict
 
 args = dotdict({
     'numIters': 1000,

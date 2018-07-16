@@ -2,7 +2,7 @@ from collections import deque
 from Arena import Arena
 from MCTS import MCTS
 import numpy as np
-from pytorch_classification.utils import Bar, AverageMeter
+from utils import Bar, AverageMeter
 import time, os, sys
 from pickle import Pickler, Unpickler
 from random import shuffle
@@ -40,12 +40,12 @@ class Coach():
         """
         trainExamples = []
         current_game = self.game.getInitGame()
-        self.curPlayer = 1
+        self.curPlayer = 1 if f'{current_game.current_player}' == 'Player1' else -1
         episodeStep = 0
 
         while True:
             episodeStep += 1
-            state = self.game.getState(current_game,self.curPlayer)
+            state = self.game.getState(self.curPlayer)
             temp = int(episodeStep < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(state, temp=temp)
