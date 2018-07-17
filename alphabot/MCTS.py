@@ -101,7 +101,7 @@ class MCTS():
 
         # pick the action with the highest upper confidence bound
         for a in range(21):
-            for b in range(9):
+            for b in range(8):
                 if valids[a,b]:
                     if (s,(a,b)) in self.Qsa:
                         u = self.Qsa[(s,(a,b))] + self.args.cpuct*self.Ps[s][a,b]*math.sqrt(self.Ns[s])/(1+self.Nsa[(s,(a,b))])

@@ -43,7 +43,7 @@ class YEET():
             actionSize: number of all possible actions
                 num_actions*8 targets, 152 total
         """
-        return [self.num_actions, 9]
+        return [self.num_actions, 8]
 
     def getNextState(self, player, action):
         """
@@ -65,9 +65,9 @@ class YEET():
         elif player == -1:
             current_player = b.players[1]
 
-        b.performAction(action, current_player) ##update this function to support new 19x8 action type
-        next_state = b.getState(current_player) ###need to figure out what the game object is
-        return (b.game, -player)
+        b.performAction(action, current_player)
+        next_state = b.getState(current_player)
+        return (next_state, -player)
 
     def getValidMoves(self, player):
         """
@@ -143,7 +143,7 @@ class YEET():
                        is used when training the neural network from examples.
         """
         assert(len(pi) == len(state))
-        pi_board = np.reshape(pi[:-1], (21, 9))
+        pi_board = np.reshape(pi[:-1], (21, 8))
         l = []
 
         for i in range(1, 5):

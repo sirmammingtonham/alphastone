@@ -97,23 +97,23 @@ class Board():
         """
         try:
             if 0 <= a[0] <= 9:
-                if a[1] == 0:
-                    player.hand[a[0]].play(a[1])
+                if player.hand[a[0]].requires_target():
+                    player.hand[a[0]].play(player.hand[a[0]].targets[a[1]])
                 else:
                     player.hand[a[0]].play()
             elif 10 <= a[0] <= 16:
-                player.field[a[0]].attack(a[1])
+                player.field[a[0]].attack(player.field[a[0]].targets[a[1]])
             elif a[0] == 17:
-                if a[1] == 0:
-                    player.hero.power.use([a[1]])
+                if player.hero.power.requires_target():
+                    player.hero.power.use(player.hero.power.targets[a[1]])
                 else:
                     player.hero.power.use()
             elif a[0] == 18:
-                player.hero.attack(a[1])
+                player.hero.attack(player.hero.attack_targets[a[1]])
             elif a[0] == 19:
                 player.game.end_turn()
             elif a[0] == 20:
-                player.choice.choose(a[1])
+                player.choice.choose(player.choice.cards[a[1]])
             else:
                 raise UnhandledAction
         except UnhandledAction:
