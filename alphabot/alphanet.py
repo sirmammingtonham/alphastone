@@ -7,7 +7,7 @@ neural net output as follows:
     a[18,] encode for hero attack
     a[19,] encode for end turn
     a[20,] encode for card index when given choice
-    a[,0-7] encode for attacking enemy at position, 8 is for playable without target
+    a[,0-7] encode for attacking available enemy at index (up to 8)
 '''
 import sys
 sys.path.append('..')

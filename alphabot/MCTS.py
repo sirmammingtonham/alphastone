@@ -32,15 +32,21 @@ class MCTS():
             self.search(state)
 
         s = self.game.stringRepresentation(state)
-        counts = [self.Nsa[(s,a)] if (s,a) in self.Nsa else 0 for a in range(21 #self.getActionSize()
-            )]
+        # for a in range(21):
+        #     for b in range(8):
+        #         counts = [self.Nsa[(s,(a,b))] if (s,(a,b)) in self.Nsa else 0]
+                # if (s,(a,b)) in self.Nsa:
+                #     print('E')
+                #     counts = [self.Nsa[(s,(a,b))]]
+                # else:
+                #     counts = 0
 
+        counts = [self.Nsa[(s,(a,b))] if (s,(a,b)) in self.Nsa else 0 for a in range(21) for b in range(8)]
         if temp==0:
             bestA = np.argmax(counts)
             probs = [0]*len(counts)
             probs[bestA]=1
             return probs
-
         counts = [x**(1./temp) for x in counts]
         probs = [x/float(sum(counts)) for x in counts]
         return probs
@@ -117,7 +123,6 @@ class MCTS():
         next_s = self.game.getState(next_player)
 
         v = self.search(next_s)
-
         if (s,a) in self.Qsa:
             self.Qsa[(s,a)] = (self.Nsa[(s,a)]*self.Qsa[(s,a)] + v)/(self.Nsa[(s,a)]+1)
             self.Nsa[(s,a)] += 1

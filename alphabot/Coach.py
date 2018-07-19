@@ -49,12 +49,15 @@ class Coach():
             temp = int(episodeStep < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(state, temp=temp)
-            sym = self.game.getSymmetries(state, pi)
-            for b,p in sym:
-                trainExamples.append([b, self.curPlayer, p, None])
-
+            pi_reshape = np.reshape(pi, (21, 8))
+            # sym = self.game.getSymmetries(state, pi)
+            s = self.game.getState(self.curPlayer)
+            trainExamples.append([s, self.curPlayer, pi, None])
+            # for b,p in sym:
+            #     trainExamples.append([b, self.curPlayer, p, None])
             action = np.random.choice(len(pi), p=pi)
-            current_game, self.curPlayer = self.game.getNextState(self.curPlayer, action)
+            a, b = np.unravel_index(np.ravel(action, np.asarray(pi).shape), pi_reshape.shape)
+            current_game, self.curPlayer = self.game.getNextState(self.curPlayer, (a[0], b[0]))
 
             r = self.game.getGameEnded(self.curPlayer)
 
@@ -84,7 +87,7 @@ class Coach():
                 for eps in range(self.args.numEps):
                     self.mcts = MCTS(self.game, self.nnet, self.args)   # reset search tree
                     iterationTrainExamples += self.executeEpisode()
-    
+                    # print(iterationTrainExamples)
                     # bookkeeping + plot progress
                     eps_time.update(time.time() - end)
                     end = time.time()

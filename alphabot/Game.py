@@ -25,6 +25,7 @@ class YEET():
         self.num_actions = 21
         self.players = ['player1', 'player2']
         self.is_basic = is_basic
+        self.b = Board()
 
     def getInitGame(self):
         """
@@ -32,10 +33,9 @@ class YEET():
             startBoard: a representation of the board (ideally this is the form
                         that will be the input to your neural network)
         """
-        b = Board()
-        b.initEnvi()
-        b.initGame()
-        return b.game
+        self.b.initEnvi()
+        self.b.initGame()
+        return self.b.game
 
     def getActionSize(self):
         """
@@ -59,14 +59,13 @@ class YEET():
             all actions executed by copy_player to preserve new game
 
         """
-        b = Board()
         if player == 1:
-            current_player = b.players[0]
+            current_player = self.b.players[0]
         elif player == -1:
-            current_player = b.players[1]
+            current_player = self.b.players[1]
 
-        b.performAction(action, current_player)
-        next_state = b.getState(current_player)
+        self.b.performAction(action, current_player)
+        next_state = self.b.getState(current_player)
         return (next_state, -player)
 
     def getValidMoves(self, player):
@@ -80,12 +79,11 @@ class YEET():
                         moves that are valid from the current board and player,
                         0 for invalid moves
         """
-        b = Board()
         if player == 1:
-            current_player = b.players[0]
+            current_player = self.b.players[0]
         elif player == -1:
-            current_player = b.players[1]
-        return b.getValidMoves(current_player)
+            current_player = self.b.players[1]
+        return self.b.getValidMoves()
 
 
 
@@ -99,11 +97,10 @@ class YEET():
             r: 0 if game has not ended. 1 if player won, -1 if player lost,
                small non-zero value for draw.
         """
-        b = Board()
         if player == 1:
-            current_player = b.players[0]
+            current_player = self.b.players[0]
         elif player == -1:
-            current_player = b.players[1]
+            current_player = self.b.players[1]
 
         if current_player.playstate == 4:
             return 1
@@ -122,13 +119,12 @@ class YEET():
         Returns:
             state: see gameUtils.getState for info
         """
-        b = Board()
         if player == 1:
-            current_player = b.players[0]
+            current_player = self.b.players[0]
         elif player == -1:
-            current_player = b.players[1]
+            current_player = self.b.players[1]
         
-        return b.getState(current_player)
+        return self.b.getState(current_player)
         # return b.game
 
     def getSymmetries(self, state, pi):
@@ -142,8 +138,9 @@ class YEET():
                        form of the board and the corresponding pi vector. This
                        is used when training the neural network from examples.
         """
-        assert(len(pi) == len(state))
-        pi_board = np.reshape(pi[:-1], (21, 8))
+        # assert(len(pi) == len(state))
+        assert(len(pi) == 168)
+        pi_board = np.reshape(pi, (21, 8))
         l = []
 
         for i in range(1, 5):

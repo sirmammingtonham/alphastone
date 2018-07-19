@@ -48,9 +48,9 @@ class Board():
         Board.game = game
         return game
 
-    def getValidMoves(self, player):
-        actions = np.zeros((21,9))
-
+    def getValidMoves(self):
+        actions = np.zeros((21,8))
+        player = self.game.current_player
         #If the player is being given a choice, return only valid choices
         if player.choice:
             for card in player.choice.cards:
@@ -62,25 +62,25 @@ class Board():
             for index, card in enumerate(player.hand):
                 if card.is_playable():
                     if card.requires_target():
-                        for target in card.targets:
+                        for target, card in enumerate(card.targets):
                             actions[index, target] = 1
-                    else:
-                        actions[index, 8] = 1
+                    # else:
+                    #     actions[index, 8] = 1
             # add targets available to minions that can attack
             for position, minion in enumerate(player.field):
                 if minion.can_attack():
-                    for index, target in enumerate(minion.attack_targets):
+                    for target, card in enumerate(minion.attack_targets):
                         actions[position+10, target] = 1
             # add hero power and targets if applicable
             if player.hero.power.is_usable():
                 if player.hero.power.requires_target():
-                    for index, target in enumerate(player.hero.power.targets):
-                        actions[17, index] = 1
-                else:
-                    actions[17, 8] = 1
+                    for target, card in enumerate(player.hero.power.targets):
+                        actions[17, target] = 1
+                # else:
+                #     actions[17, 8] = 1
             # add hero attacking if applicable
             if player.hero.can_attack():
-                for index, target in enumerate(player.hero.attack_targets):
+                for target, card in enumerate(player.hero.attack_targets):
                     actions[18, target] = 1
             # add end turn
             actions[19] = 1
@@ -95,6 +95,7 @@ class Board():
             player, 
             game,
         """
+        print(a)
         try:
             if 0 <= a[0] <= 9:
                 if player.hand[a[0]].requires_target():
@@ -120,7 +121,8 @@ class Board():
             print("Attempted to take an inappropriate action!\n")
             print(a)
         except GameOver:
-            raise
+            print("Game completed successfully.")
+
 
     def getState(self, player):
         """
