@@ -32,14 +32,6 @@ class MCTS():
             self.search(state)
 
         s = self.game.stringRepresentation(state)
-        # for a in range(21):
-        #     for b in range(8):
-        #         counts = [self.Nsa[(s,(a,b))] if (s,(a,b)) in self.Nsa else 0]
-                # if (s,(a,b)) in self.Nsa:
-                #     print('E')
-                #     counts = [self.Nsa[(s,(a,b))]]
-                # else:
-                #     counts = 0
 
         counts = [self.Nsa[(s,(a,b))] if (s,(a,b)) in self.Nsa else 0 for a in range(21) for b in range(8)]
         if temp==0:

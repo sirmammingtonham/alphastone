@@ -1,13 +1,14 @@
 import random
 import numpy as np
-import sys
+from fireplace import cards
+from fireplace.exceptions import GameOver, InvalidAction
 from fireplace.game import Game
 from fireplace.player import Player
 from fireplace.utils import random_draft
-from fireplace import cards
-from fireplace.exceptions import GameOver, InvalidAction
-from hearthstone.enums import CardClass, CardType
+from hearthstone.enums import CardClass
+
 from .exceptions import UnhandledAction
+
 
 class Board():
     """
@@ -64,8 +65,8 @@ class Board():
                     if card.requires_target():
                         for target, card in enumerate(card.targets):
                             actions[index, target] = 1
-                    # else:
-                    #     actions[index, 8] = 1
+                    else:
+                        actions[index] = 1
             # add targets available to minions that can attack
             for position, minion in enumerate(player.field):
                 if minion.can_attack():
@@ -76,14 +77,14 @@ class Board():
                 if player.hero.power.requires_target():
                     for target, card in enumerate(player.hero.power.targets):
                         actions[17, target] = 1
-                # else:
-                #     actions[17, 8] = 1
+                else:
+                    actions[17] = 1
             # add hero attacking if applicable
             if player.hero.can_attack():
                 for target, card in enumerate(player.hero.attack_targets):
                     actions[18, target] = 1
             # add end turn
-            actions[19] = 1
+        actions[19] = 1
         return actions
 
     def performAction(self, a, player):
@@ -95,7 +96,7 @@ class Board():
             player, 
             game,
         """
-        print(a)
+        player = Board.game.current_player
         try:
             if 0 <= a[0] <= 9:
                 if player.hand[a[0]].requires_target():
@@ -103,10 +104,10 @@ class Board():
                 else:
                     player.hand[a[0]].play()
             elif 10 <= a[0] <= 16:
-                player.field[a[0]].attack(player.field[a[0]].targets[a[1]])
+                player.field[a[0]].attack(player.field[a[0]].attack_targets[a[1]])
             elif a[0] == 17:
                 if player.hero.power.requires_target():
-                    player.hero.power.use(player.hero.power.targets[a[1]])
+                        player.hero.power.use(player.hero.power.play_targets[a[1]])
                 else:
                     player.hero.power.use()
             elif a[0] == 18:
@@ -120,8 +121,11 @@ class Board():
         except UnhandledAction:
             print("Attempted to take an inappropriate action!\n")
             print(a)
+        except InvalidAction:
+            print("Attempted to take an invalid action!\n")
+            print(a)
         except GameOver:
-            print("Game completed successfully.")
+            print("Game already completed. No action taken.")
 
 
     def getState(self, player):
@@ -135,8 +139,8 @@ class Board():
         """
         s = np.zeros(263, dtype=np.int32)
 
-        p1 = player
-        p2 = player.opponent
+        p1 = Board.game.current_player
+        p2 = p1.opponent
 
         #0-9 player1 class, we subtract 1 here because the classes are from 1 to 10
         s[p1.hero.card_class-1] = 1
