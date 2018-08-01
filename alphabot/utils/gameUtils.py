@@ -50,7 +50,7 @@ class Board():
         return game
 
     def getValidMoves(self, game_instance):
-        actions = np.zeros((21,8))
+        actions = np.zeros((21,9))
         player = game_instance.current_player
         #If the player is being given a choice, return only valid choices
         if player.choice:
@@ -104,7 +104,7 @@ class Board():
                 else:
                     player.hand[a[0]].play()
             elif 10 <= a[0] <= 16:
-                player.field[a[0]].attack(player.field[a[0]].attack_targets[a[1]])
+                player.field[a[0]-10].attack(player.field[a[0]-10].attack_targets[a[1]])
             elif a[0] == 17:
                 if player.hero.power.requires_target():
                         player.hero.power.use(player.hero.power.play_targets[a[1]])
@@ -125,7 +125,7 @@ class Board():
             print("Attempted to take an invalid action!\n")
             print(a)
         except GameOver:
-            print("Game already completed. No action taken.")
+            print("Game already completed. No action taken.\n")
 
 
     def getState(self, player, game_instance):

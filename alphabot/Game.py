@@ -37,14 +37,6 @@ class YEET():
         self.b.initGame()
         return self.b.game
 
-    def getActionSize(self):
-        """
-        Returns:
-            actionSize: number of all possible actions
-                num_actions*8 targets, 152 total
-        """
-        return [self.num_actions, 8]
-
     def getNextState(self, player, action, game_instance=Board.game):
         """
         Input:
@@ -150,7 +142,7 @@ class YEET():
         """
         # assert(len(pi) == len(state))
         assert(len(pi) == 168)
-        pi_board = np.reshape(pi, (21, 8))
+        pi_board = np.reshape(pi, (21, 9))
         l = []
 
         for i in range(1, 5):
