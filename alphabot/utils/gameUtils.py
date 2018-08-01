@@ -49,9 +49,9 @@ class Board():
         Board.game = game
         return game
 
-    def getValidMoves(self):
+    def getValidMoves(self, game_instance):
         actions = np.zeros((21,8))
-        player = self.game.current_player
+        player = game_instance.current_player
         #If the player is being given a choice, return only valid choices
         if player.choice:
             for card in player.choice.cards:
@@ -87,7 +87,7 @@ class Board():
         actions[19] = 1
         return actions
 
-    def performAction(self, a, player):
+    def performAction(self, a, player, game_instance):
         """
         utilty to convert an action tuple
         into an action input
@@ -96,7 +96,7 @@ class Board():
             player, 
             game,
         """
-        player = Board.game.current_player
+        player = game_instance.current_player
         try:
             if 0 <= a[0] <= 9:
                 if player.hand[a[0]].requires_target():
@@ -128,7 +128,7 @@ class Board():
             print("Game already completed. No action taken.")
 
 
-    def getState(self, player):
+    def getState(self, player, game_instance):
         """
         Args:
             game, the current game object
@@ -139,7 +139,7 @@ class Board():
         """
         s = np.zeros(263, dtype=np.int32)
 
-        p1 = Board.game.current_player
+        p1 = game_instance.current_player
         p2 = p1.opponent
 
         #0-9 player1 class, we subtract 1 here because the classes are from 1 to 10

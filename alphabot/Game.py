@@ -45,7 +45,7 @@ class YEET():
         """
         return [self.num_actions, 8]
 
-    def getNextState(self, player, action):
+    def getNextState(self, player, action, game_instance=Board.game):
         """
         Input:
             board: current board (gameUtils)
@@ -59,16 +59,19 @@ class YEET():
             all actions executed by copy_player to preserve new game
 
         """
-        if player == 1:
-            current_player = self.b.players[0]
-        elif player == -1:
-            current_player = self.b.players[1]
+        if game_instance == None:
+            game_instance = Board.game
 
-        self.b.performAction(action, current_player)
-        next_state = self.b.getState(current_player)
+        if player == 1:
+            current_player = game_instance.players[0]
+        elif player == -1:
+            current_player = game_instance.players[1]
+
+        self.b.performAction(action, current_player, game_instance)
+        next_state = self.b.getState(current_player, game_instance)
         return (next_state, -player)
 
-    def getValidMoves(self, player):
+    def getValidMoves(self, player, game_instance=Board.game):
         """
         Input:
             board: current board
@@ -79,15 +82,17 @@ class YEET():
                         moves that are valid from the current board and player,
                         0 for invalid moves
         """
-        if player == 1:
-            current_player = self.b.players[0]
-        elif player == -1:
-            current_player = self.b.players[1]
-        return self.b.getValidMoves()
+        # if player == 1:
+        #     current_player = self.b.players[0]
+        # elif player == -1:
+        #     current_player = self.b.players[1]
+        if game_instance == None:
+            game_instance = Board.game
+        return self.b.getValidMoves(game_instance)
 
 
 
-    def getGameEnded(self, player):
+    def getGameEnded(self, player, game_instance=Board.game):
         """
         Input:
             board: current board
@@ -97,10 +102,13 @@ class YEET():
             r: 0 if game has not ended. 1 if player won, -1 if player lost,
                small non-zero value for draw.
         """
+        if game_instance == None:
+            game_instance = Board.game
+
         if player == 1:
-            current_player = self.b.players[0]
+            current_player = game_instance.players[0]
         elif player == -1:
-            current_player = self.b.players[1]
+            current_player = game_instance.players[1]
 
         if current_player.playstate == 4:
             return 1
@@ -110,7 +118,7 @@ class YEET():
             return 0.0001
         return 0
 
-    def getState(self, player):
+    def getState(self, player, game_instance=Board.game):
         """
         Input:
             board: current board
@@ -119,12 +127,14 @@ class YEET():
         Returns:
             state: see gameUtils.getState for info
         """
-        if player == 1:
-            current_player = self.b.players[0]
-        elif player == -1:
-            current_player = self.b.players[1]
-        
-        return self.b.getState(current_player)
+        # if player == 1:
+        #     current_player = self.b.players[0]
+        # elif player == -1:
+        #     current_player = self.b.players[1]
+        if game_instance == None:
+            game_instance = Board.game
+
+        return self.b.getState(player, game_instance)
         # return b.game
 
     def getSymmetries(self, state, pi):

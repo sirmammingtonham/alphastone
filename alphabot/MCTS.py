@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import copy
 EPS = 1e-8
 
 class MCTS():
@@ -29,7 +30,7 @@ class MCTS():
                    proportional to Nsa[(s,a)]**(1./temp)
         """
         for i in range(self.args.numMCTSSims):
-            self.search(state)
+            self.search(state, create_copy=True)
 
         s = self.game.stringRepresentation(state)
 
@@ -44,8 +45,10 @@ class MCTS():
         return probs
 
 
-    def search(self, state):
+    def search(self, state, create_copy):
         """
+        NEEDS TO RUN ON DEEPCOPY!!!
+
         This function performs one iteration of MCTS. It is recursively called
         till a leaf node is found. The action chosen at each node is one that
         has the maximum upper confidence bound as in the paper.
@@ -63,6 +66,8 @@ class MCTS():
         Returns:
             v: the negative of the value of the current state
         """
+        if create_copy:
+            self.game_copy = copy.deepcopy(self.game.b.game)
 
         s = self.game.stringRepresentation(state)
 
@@ -75,7 +80,7 @@ class MCTS():
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.nnet.predict(state)
-            valids = self.game.getValidMoves(1)
+            valids = self.game.getValidMoves(1, self.game_copy)
             self.Ps[s] = self.Ps[s]*valids      # masking invalid moves
             sum_Ps_s = np.sum(self.Ps[s])
             if sum_Ps_s > 0:
@@ -111,10 +116,10 @@ class MCTS():
                         best_act = (a,b)
 
         a = best_act
-        next_s, next_player = self.game.getNextState(1, a)
-        next_s = self.game.getState(next_player)
+        next_s, next_player = self.game.getNextState(1, a, self.game_copy)
+        # next_s = self.game.getState(next_player)
 
-        v = self.search(next_s)
+        v = self.search(next_s, create_copy=False) #call recursively
         if (s,a) in self.Qsa:
             self.Qsa[(s,a)] = (self.Nsa[(s,a)]*self.Qsa[(s,a)] + v)/(self.Nsa[(s,a)]+1)
             self.Nsa[(s,a)] += 1
