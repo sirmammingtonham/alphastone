@@ -10,7 +10,7 @@ from hearthstone.enums import CardClass
 from .exceptions import UnhandledAction
 
 
-class Board():
+class Board:
     """
     This class interacts with Game.py to initialize the game, 
     return states, and return actions
@@ -40,7 +40,7 @@ class Board():
         game = Game(players=self.players)
         game.start()
 
-        #Skip mulligan for now
+        # Skip mulligan for now
         for player in game.players:
             cards_to_mulligan = random.sample(player.choice.cards, 0)
             player.choice.choose(*cards_to_mulligan)

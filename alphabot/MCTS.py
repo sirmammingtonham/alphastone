@@ -72,7 +72,7 @@ class MCTS():
         s = self.game.stringRepresentation(state)
 
         if s not in self.Es:
-            self.Es[s] = self.game.getGameEnded(1)
+            self.Es[s] = self.game.getGameEnded(1, self.game_copy)
         if self.Es[s]!=0:
             # terminal node
             return -self.Es[s]
