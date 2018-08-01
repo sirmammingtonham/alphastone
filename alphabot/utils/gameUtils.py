@@ -54,8 +54,8 @@ class Board():
         player = game_instance.current_player
         #If the player is being given a choice, return only valid choices
         if player.choice:
-            for card in player.choice.cards:
-                actions[20, card] = 1
+            for index, card in player.choice.cards:
+                actions[20, index] = 1
                 #actions.append(("choose", card, None))
 
         else:

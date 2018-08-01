@@ -1,13 +1,4 @@
-import random
 import numpy as np
-import sys
-import copy
-from fireplace.game import Game
-from fireplace.player import Player
-from fireplace.utils import random_draft
-from fireplace import cards
-from fireplace.exceptions import GameOver, InvalidAction
-from hearthstone.enums import CardClass, CardType
 from utils import Board, UnhandledAction
 
 class YEET():

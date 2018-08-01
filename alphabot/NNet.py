@@ -1,20 +1,12 @@
-import argparse
 import os
-import shutil
 import time
-import random
 import numpy as np
-import math
 import sys
 sys.path.append('../../')
 from utils import Bar, AverageMeter, dotdict
 
-import argparse
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-from torchvision import datasets, transforms
 from torch.autograd import Variable
 
 from alphanet import DQN as nnet

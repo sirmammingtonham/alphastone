@@ -1,4 +1,3 @@
-import numpy as np
 from utils import Bar, AverageMeter
 import time
 
@@ -47,7 +46,6 @@ class Arena():
             valids = self.game.getValidMoves(curPlayer)
 
             if valids[actiona, actionb] == 0:
-                print(action)
                 assert valids[actiona, actionb] > 0
             current_game, curPlayer = self.game.getNextState(curPlayer, (actiona, actionb))
         # if verbose:

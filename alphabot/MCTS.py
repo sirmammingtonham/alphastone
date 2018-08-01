@@ -68,7 +68,6 @@ class MCTS():
         """
         if create_copy:
             self.game_copy = copy.deepcopy(self.game.b.game)
-            print("CREATING COPY\n \n \n")
 
         s = self.game.stringRepresentation(state)
 
