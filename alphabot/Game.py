@@ -88,10 +88,11 @@ class YEET:
         if game_instance == None:
             game_instance = Board.game
 
-        if player == 1:
-            current_player = game_instance.players[0]
-        elif player == -1:
-            current_player = game_instance.players[1]
+        # if player == 1:
+        #     current_player = game_instance.players[0]
+        # elif player == -1:
+        #     current_player = game_instance.players[1]
+        current_player = game_instance.current_player
 
         if current_player.playstate == 4:
             return 1

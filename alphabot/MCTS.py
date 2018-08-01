@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import copy
+from fireplace.exceptions import GameOver, InvalidAction
 EPS = 1e-8
 
 class MCTS():
@@ -118,8 +119,11 @@ class MCTS():
         a = best_act
         try:
             next_s, next_player = self.game.getNextState(1, a, self.game_copy)
-        except:
-            # fixes recursion errors by preventing infinite loop while traversing position tree
+        except GameOver:
+            self.Es[s] == self.game.getGameEnded(1, self.game_copy)
+            return -self.Es[s]
+        except InvalidAction:
+            # attempting to reset new action if invalid action is attempted
             next_s, next_player = self.game.getNextState(1, (19,0), self.game_copy)
             cur_best = -float('inf')
         # next_s = self.game.getState(next_player)
