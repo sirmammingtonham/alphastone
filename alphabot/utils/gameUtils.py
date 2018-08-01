@@ -50,7 +50,7 @@ class Board():
         return game
 
     def getValidMoves(self, game_instance):
-        actions = np.zeros((21,9))
+        actions = np.zeros((21,16))
         player = game_instance.current_player
         #If the player is being given a choice, return only valid choices
         if player.choice:
@@ -121,9 +121,10 @@ class Board():
         except UnhandledAction:
             print("Attempted to take an inappropriate action!\n")
             print(a)
-        except InvalidAction:
-            print("Attempted to take an invalid action!\n")
-            print(a)
+        # except InvalidAction:
+        #     print("Attempted to take an invalid action!\n \n \n")
+        #     print(a)
+        #     player.game.end_turn()
         except GameOver:
             print("Game already completed. No action taken.\n")
 

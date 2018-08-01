@@ -34,7 +34,7 @@ class MCTS():
 
         s = self.game.stringRepresentation(state)
 
-        counts = [self.Nsa[(s,(a,b))] if (s,(a,b)) in self.Nsa else 0 for a in range(21) for b in range(8)]
+        counts = [self.Nsa[(s,(a,b))] if (s,(a,b)) in self.Nsa else 0 for a in range(21) for b in range(16)]
         if temp==0:
             bestA = np.argmax(counts)
             probs = [0]*len(counts)
@@ -104,7 +104,7 @@ class MCTS():
 
         # pick the action with the highest upper confidence bound
         for a in range(21):
-            for b in range(8):
+            for b in range(16):
                 if valids[a,b]:
                     if (s,(a,b)) in self.Qsa:
                         u = self.Qsa[(s,(a,b))] + self.args.cpuct*self.Ps[s][a,b]*math.sqrt(self.Ns[s])/(1+self.Nsa[(s,(a,b))])
@@ -116,7 +116,12 @@ class MCTS():
                         best_act = (a,b)
 
         a = best_act
-        next_s, next_player = self.game.getNextState(1, a, self.game_copy)
+        try:
+            next_s, next_player = self.game.getNextState(1, a, self.game_copy)
+        except:
+            # fixes recursion errors by preventing infinite loop while traversing position tree
+            next_s, next_player = self.game.getNextState(1, (19,0), self.game_copy)
+            cur_best = -float('inf')
         # next_s = self.game.getState(next_player)
 
         v = self.search(next_s, create_copy=False) #call recursively

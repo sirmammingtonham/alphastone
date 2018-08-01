@@ -1,13 +1,13 @@
 '''
 neural net output as follows:
-21x9 2d tensor = a
+21x16 2d tensor = a
     a[0-9,] encode for playing card in hand in position 
     a[10-16,] encode for attacking with minion at position
     a[17,] encode for hero power
     a[18,] encode for hero attack
     a[19,] encode for end turn
     a[20,] encode for card index when given choice
-    a[,0-7] encode for targeting available target at index (up to 9)
+    a[,0-15] encode for targeting available target at index (2 for heroes, 14 for board)
 '''
 import sys
 sys.path.append('..')
@@ -103,8 +103,8 @@ class DQN(nn.Module):
         #policy head (output as action probabilities (size of actions))
         self.pi_conv1 = nn.Conv1d(256, 2, kernel_size=1)
         self.pi_bn1 = nn.BatchNorm1d(2)
-        self.pi_fc1 = nn.Linear(2*255, 21*9)
-        self.pi_fc2 = nn.Linear(9, 9)
+        self.pi_fc1 = nn.Linear(2*255, 21*16)
+        self.pi_fc2 = nn.Linear(16, 16)
         
         #value head (output as state value [-1,1])
         self.v_conv1 = nn.Conv1d(256, 4, kernel_size=1)
@@ -123,7 +123,7 @@ class DQN(nn.Module):
         pi = F.relu(self.pi_bn1(self.pi_conv1(x))) #feed resnet into policy head
         pi = pi.view(-1, 2*255)
         pi = F.relu(self.pi_fc1(pi))
-        pi = pi.view(21, 9)
+        pi = pi.view(21, 16)
         pi = F.log_softmax(self.pi_fc2(pi), dim=1)
 
         #value head (score of board state)

@@ -49,7 +49,7 @@ class Coach():
             temp = int(episodeStep < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(state, temp=temp)
-            pi_reshape = np.reshape(pi, (21, 9))
+            pi_reshape = np.reshape(pi, (21, 16))
             # sym = self.game.getSymmetries(state, pi)
             s = self.game.getState(self.curPlayer)
             trainExamples.append([s, self.curPlayer, pi, None])
