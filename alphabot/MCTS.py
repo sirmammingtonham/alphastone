@@ -35,7 +35,7 @@ class MCTS():
 
         s = self.game.stringRepresentation(state)
 
-        counts = [self.Nsa[(s,(a,b))] if (s,(a,b)) in self.Nsa else 0 for a in range(21) for b in range(16)]
+        counts = [self.Nsa[(s,(a,b))] if (s,(a,b)) in self.Nsa else 0 for a in range(21) for b in range(18)]
         if temp==0:
             bestA = np.argmax(counts)
             probs = [0]*len(counts)
@@ -105,7 +105,7 @@ class MCTS():
 
         # pick the action with the highest upper confidence bound
         for a in range(21):
-            for b in range(16):
+            for b in range(18):
                 if valids[a,b]:
                     if (s,(a,b)) in self.Qsa:
                         u = self.Qsa[(s,(a,b))] + self.args.cpuct*self.Ps[s][a,b]*math.sqrt(self.Ns[s])/(1+self.Nsa[(s,(a,b))])

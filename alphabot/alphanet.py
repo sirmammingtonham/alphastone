@@ -103,8 +103,8 @@ class DQN(nn.Module):
         #policy head (output as action probabilities (size of actions))
         self.pi_conv1 = nn.Conv1d(256, 2, kernel_size=1)
         self.pi_bn1 = nn.BatchNorm1d(2)
-        self.pi_fc1 = nn.Linear(2*255, 21*16)
-        self.pi_fc2 = nn.Linear(16, 16)
+        self.pi_fc1 = nn.Linear(2*255, 21*18)
+        self.pi_fc2 = nn.Linear(18, 18)
         
         #value head (output as state value [-1,1])
         self.v_conv1 = nn.Conv1d(256, 4, kernel_size=1)
@@ -123,7 +123,7 @@ class DQN(nn.Module):
         pi = F.relu(self.pi_bn1(self.pi_conv1(x))) #feed resnet into policy head
         pi = pi.view(-1, 2*255)
         pi = F.relu(self.pi_fc1(pi))
-        pi = pi.view(21, 16)
+        pi = pi.view(21, 18)
         pi = F.log_softmax(self.pi_fc2(pi), dim=1)
 
         #value head (score of board state)

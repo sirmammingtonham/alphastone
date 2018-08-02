@@ -8,7 +8,7 @@ from pickle import Pickler, Unpickler
 from random import shuffle
 
 
-class Coach():
+class Coach:
     """
     This class executes the self-play + learning. It uses the functions defined
     in Game and NeuralNet. args are specified in main.py.
@@ -49,7 +49,7 @@ class Coach():
             temp = int(episodeStep < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(state, temp=temp)
-            pi_reshape = np.reshape(pi, (21, 16))
+            pi_reshape = np.reshape(pi, (21, 18))
             # sym = self.game.getSymmetries(state, pi)
             s = self.game.getState(self.curPlayer)
             trainExamples.append([s, self.curPlayer, pi, None])

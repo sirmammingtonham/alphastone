@@ -50,7 +50,7 @@ class Board:
         return game
 
     def getValidMoves(self, game_instance):
-        actions = np.zeros((21,16))
+        actions = np.zeros((21,18))
         player = game_instance.current_player
         #If the player is being given a choice, return only valid choices
         if player.choice:
