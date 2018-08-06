@@ -97,36 +97,37 @@ class Board:
             game,
         """
         player = game_instance.current_player
-        try:
-            if 0 <= a[0] <= 9:
-                if player.hand[a[0]].requires_target():
-                    player.hand[a[0]].play(player.hand[a[0]].targets[a[1]])
+        if player.playstate == 1:
+            try:
+                if 0 <= a[0] <= 9:
+                    if player.hand[a[0]].requires_target():
+                        player.hand[a[0]].play(player.hand[a[0]].targets[a[1]])
+                    else:
+                        player.hand[a[0]].play()
+                elif 10 <= a[0] <= 16:
+                    player.field[a[0]-10].attack(player.field[a[0]-10].attack_targets[a[1]])
+                elif a[0] == 17:
+                    if player.hero.power.requires_target():
+                            player.hero.power.use(player.hero.power.play_targets[a[1]])
+                    else:
+                        player.hero.power.use()
+                elif a[0] == 18:
+                    player.hero.attack(player.hero.attack_targets[a[1]])
+                elif a[0] == 19:
+                    player.game.end_turn()
+                elif a[0] == 20:
+                    player.choice.choose(player.choice.cards[a[1]])
                 else:
-                    player.hand[a[0]].play()
-            elif 10 <= a[0] <= 16:
-                player.field[a[0]-10].attack(player.field[a[0]-10].attack_targets[a[1]])
-            elif a[0] == 17:
-                if player.hero.power.requires_target():
-                        player.hero.power.use(player.hero.power.play_targets[a[1]])
-                else:
-                    player.hero.power.use()
-            elif a[0] == 18:
-                player.hero.attack(player.hero.attack_targets[a[1]])
-            elif a[0] == 19:
-                player.game.end_turn()
-            elif a[0] == 20:
-                player.choice.choose(player.choice.cards[a[1]])
-            else:
-                raise UnhandledAction
-        except UnhandledAction:
-            print("Attempted to take an inappropriate action!\n")
-            print(a)
-        # except InvalidAction:
-        #     print("Attempted to take an invalid action!\n \n \n")
-        #     print(a)
-        #     player.game.end_turn()
-        except GameOver:
-            print("Game already completed. No action taken.\n")
+                    raise UnhandledAction
+            except UnhandledAction:
+                print("Attempted to take an inappropriate action!\n")
+                print(a)
+            # except InvalidAction:
+            #     print("Attempted to take an invalid action!\n \n \n")
+            #     print(a)
+            #     player.game.end_turn()
+            except GameOver:
+                raise GameOver
 
 
     def getState(self, player, game_instance):

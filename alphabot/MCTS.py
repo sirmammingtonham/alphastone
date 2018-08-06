@@ -117,18 +117,13 @@ class MCTS():
                         best_act = (a,b)
 
         a = best_act
-        try:
-            next_s, next_player = self.game.getNextState(1, a, self.game_copy)
-        except GameOver:
-            self.Es[s] == self.game.getGameEnded(1, self.game_copy)
-            return -self.Es[s]
-        except InvalidAction:
-            # attempting to reset new action if invalid action is attempted
-            next_s, next_player = self.game.getNextState(1, (19,0), self.game_copy)
-            cur_best = -float('inf')
-        # next_s = self.game.getState(next_player)
 
-        v = self.search(next_s, create_copy=False) #call recursively
+        next_s, next_player = self.game.getNextState(1, a, self.game_copy)
+        next_s = self.game.getState(next_player, self.game_copy)
+        try:
+            v = self.search(next_s, create_copy=False) #call recursively
+        except GameOver:
+            v = v
         if (s,a) in self.Qsa:
             self.Qsa[(s,a)] = (self.Nsa[(s,a)]*self.Qsa[(s,a)] + v)/(self.Nsa[(s,a)]+1)
             self.Nsa[(s,a)] += 1

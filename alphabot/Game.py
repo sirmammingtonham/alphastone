@@ -1,5 +1,6 @@
 import numpy as np
 from utils import Board, UnhandledAction
+from fireplace.exceptions import GameOver
 
 class YEET:
     """
@@ -49,8 +50,10 @@ class YEET:
             current_player = game_instance.players[0]
         elif player == -1:
             current_player = game_instance.players[1]
-
-        self.b.performAction(action, current_player, game_instance)
+        try:
+            self.b.performAction(action, current_player, game_instance)
+        except GameOver:
+            raise GameOver
         next_state = self.b.getState(current_player, game_instance)
         return (next_state, -player)
 
