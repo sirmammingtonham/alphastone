@@ -57,9 +57,12 @@ class Coach:
             #     trainExamples.append([b, self.curPlayer, p, None])
             action = np.random.choice(len(pi), p=pi)
             a, b = np.unravel_index(np.ravel(action, np.asarray(pi).shape), pi_reshape.shape)
-            current_game, self.curPlayer = self.game.getNextState(self.curPlayer, (a[0], b[0]))
+            try:
+                current_game, self.curPlayer = self.game.getNextState(self.curPlayer, (a[0], b[0]))
+                r = self.game.getGameEnded(self.curPlayer)
+            except:
+                r = self.game.getGameEnded(self.curPlayer)
 
-            r = self.game.getGameEnded(self.curPlayer)
 
             if r!=0:
                 return [(x[0],x[2],r*((-1)**(x[1]!=self.curPlayer))) for x in trainExamples]

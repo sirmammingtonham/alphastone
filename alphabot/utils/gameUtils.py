@@ -100,10 +100,14 @@ class Board:
         if player.playstate == 1:
             try:
                 if 0 <= a[0] <= 9:
-                    if player.hand[a[0]].requires_target():
-                        player.hand[a[0]].play(player.hand[a[0]].targets[a[1]])
+                    if player.hand[a[0]].is_playable():
+                        if player.hand[a[0]].requires_target():
+                            if player.hand[a[0]].targets[a[1]] in player.hand[a[0]].targets:
+                                player.hand[a[0]].play(player.hand[a[0]].targets[a[1]])
+                        else:
+                            player.hand[a[0]].play()
                     else:
-                        player.hand[a[0]].play()
+                        player.game.end_turn()
                 elif 10 <= a[0] <= 16:
                     player.field[a[0]-10].attack(player.field[a[0]-10].attack_targets[a[1]])
                 elif a[0] == 17:
