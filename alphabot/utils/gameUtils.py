@@ -54,7 +54,7 @@ class Board:
         player = game_instance.current_player
         #If the player is being given a choice, return only valid choices
         if player.choice:
-            for index, card in player.choice.cards:
+            for index, card in enumerate(player.choice.cards):
                 actions[20, index] = 1
                 #actions.append(("choose", card, None))
 
@@ -84,7 +84,7 @@ class Board:
                 for target, card in enumerate(player.hero.attack_targets):
                     actions[18, target] = 1
             # add end turn
-        actions[19] = 1
+            actions[19,1] = 1
         return actions
 
     def performAction(self, a, player, game_instance):
@@ -119,7 +119,7 @@ class Board:
                     player.hero.attack(player.hero.attack_targets[a[1]])
                 elif a[0] == 19:
                     player.game.end_turn()
-                elif a[0] == 20:
+                elif player.choice:
                     player.choice.choose(player.choice.cards[a[1]])
                 else:
                     raise UnhandledAction
@@ -127,11 +127,11 @@ class Board:
                 print("Attempted to take an inappropriate action!\n")
                 print(a)
             # except InvalidAction:
-            #     print("Attempted to take an invalid action!\n \n \n")
-            #     print(a)
-            #     player.game.end_turn()
+            #     player.choice.choose(player.choice.cards[0])
+            except IndexError:
+                player.game.end_turn()
             except GameOver:
-                raise GameOver
+                pass
 
 
     def getState(self, player, game_instance):

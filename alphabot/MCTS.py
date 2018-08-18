@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import copy
+import random
 from fireplace.exceptions import GameOver, InvalidAction
 EPS = 1e-8
 
@@ -48,6 +49,22 @@ class MCTS():
         probs = [x/float(sum(counts)) for x in counts]
         return probs
 
+    def cloneAndRandomize(self, game):
+        """ Create a deep clone of this game state, randomizing any information not visible to the specified observer player.
+        """
+        game_copy = copy.deepcopy(game)
+        enemy = game.current_player.opponent
+        random.shuffle(enemy.hand)
+        random.shuffle(enemy.deck)
+        # for idx, card in enumerate(enemy.hand):
+        #     if card.id == 'GAME_005':
+        #         coin = enemy.hand.pop(idx)
+        #
+        # combined = enemy.hand + enemy.deck
+        # random.shuffle(combined)
+        # enemy.hand, enemy.deck = combined[:len(enemy.hand)], combined[len(enemy.hand):]
+        # enemy.hand.append(coin)
+        return game_copy
 
     def search(self, state, create_copy):
         """
@@ -71,13 +88,14 @@ class MCTS():
             v: the negative of the value of the current state
         """
         if create_copy:
-            self.game_copy = copy.deepcopy(self.game.b.game)
+            self.game_copy = self.cloneAndRandomize(self.game.b.game)
+            copy.deepcopy(self.game.b.game)
 
         s = self.game.stringRepresentation(state)
 
         if s not in self.Es:
             self.Es[s] = self.game.getGameEnded(1, self.game_copy)
-        if self.Es[s]!=0:
+        if self.game_copy.ended:
             # terminal node
             return -self.Es[s]
 
