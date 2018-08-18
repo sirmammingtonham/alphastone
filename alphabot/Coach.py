@@ -1,6 +1,6 @@
 from collections import deque
 from Arena import Arena
-from MCTS import MCTS
+from ISMCTS import ISMCTS
 import numpy as np
 from utils import Bar, AverageMeter
 import time, os, sys
@@ -18,7 +18,7 @@ class Coach:
         self.nnet = nnet
         self.pnet = self.nnet.__class__(self.game)  # the competitor network
         self.args = args
-        self.mcts = MCTS(self.game, self.nnet, self.args)
+        self.mcts = ISMCTS(self.nnet)
         self.trainExamplesHistory = []    # history of examples from args.numItersForTrainExamplesHistory latest iterations
         self.skipFirstSelfPlay = False # can be overriden in loadTrainExamples()
 
@@ -45,24 +45,26 @@ class Coach:
 
         while True:
             episodeStep += 1
-            state = self.game.getState(self.curPlayer)
+            # state = self.game.getState(self.curPlayer)
             temp = int(episodeStep < self.args.tempThreshold)
+            # pi = self.mcts.getActionProb(state, temp=temp)
+            # pi_reshape = np.reshape(pi, (21, 18))
+            # # sym = self.game.getSymmetries(state, pi)
+            # s = self.game.getState(self.curPlayer)
+            # trainExamples.append([s, self.curPlayer, pi, None])
+            # # for b,p in sym:
+            # #     trainExamples.append([b, self.curPlayer, p, None])
+            # action = np.random.choice(len(pi), p=pi)
+            # a, b = np.unravel_index(np.ravel(action, np.asarray(pi).shape), pi_reshape.shape)
+            # try:
+            #     current_game, self.curPlayer = self.game.getNextState(self.curPlayer, (a[0], b[0]))
+            #     r = self.game.getGameEnded(self.curPlayer)
+            # except:
+            #     r = self.game.getGameEnded(self.curPlayer)
 
-            pi = self.mcts.getActionProb(state, temp=temp)
-            pi_reshape = np.reshape(pi, (21, 18))
-            # sym = self.game.getSymmetries(state, pi)
-            s = self.game.getState(self.curPlayer)
-            trainExamples.append([s, self.curPlayer, pi, None])
-            # for b,p in sym:
-            #     trainExamples.append([b, self.curPlayer, p, None])
-            action = np.random.choice(len(pi), p=pi)
-            a, b = np.unravel_index(np.ravel(action, np.asarray(pi).shape), pi_reshape.shape)
-            try:
-                current_game, self.curPlayer = self.game.getNextState(self.curPlayer, (a[0], b[0]))
-                r = self.game.getGameEnded(self.curPlayer)
-            except:
-                r = self.game.getGameEnded(self.curPlayer)
-
+            move = self.MCTS.getBestAction(rootstate=current_game, itermax=100, verbose=False, temp=temp)
+            current_game, self.curPlayer = self.game.getNextState(self.curPlayer, move)
+            r = self.game.getGameEnded(self.curPlayer)
 
             if r!=0:
                 return [(x[0],x[2],r*((-1)**(x[1]!=self.curPlayer))) for x in trainExamples]
@@ -118,14 +120,14 @@ class Coach:
             # training new network, keeping a copy of the old one
             self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
             self.pnet.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
-            pmcts = MCTS(self.game, self.pnet, self.args)
+            pmcts = ISMCTS(self.nnet)
             
             self.nnet.train(trainExamples)
-            nmcts = MCTS(self.game, self.nnet, self.args)
+            nmcts = ISMCTS(self.nnet)
 
             print('PITTING AGAINST PREVIOUS VERSION')
-            arena = Arena(lambda x: np.where(x==np.max(pmcts.getActionProb(x, temp=0))),
-                          lambda x: np.where(x==np.max(nmcts.getActionProb(x, temp=0))), self.game)
+            arena = Arena(lambda x: pmcts.getBestAction(rootstate=x, itermax=100, verbose=False, temp=0),
+                          lambda x: nmcts.getBestAction(rootstate=x, itermax=100, verbose=False, temp=0), self.game)
             pwins, nwins, draws = arena.playGames(self.args.arenaCompare)
 
             print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
