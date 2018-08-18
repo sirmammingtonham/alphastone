@@ -62,7 +62,7 @@ class Coach:
             # except:
             #     r = self.game.getGameEnded(self.curPlayer)
 
-            move = self.MCTS.getBestAction(rootstate=current_game, itermax=100, verbose=False, temp=temp)
+            move = self.mcts.getBestAction(rootstate=current_game, itermax=100, verbose=False, temp=temp)
             current_game, self.curPlayer = self.game.getNextState(self.curPlayer, move)
             r = self.game.getGameEnded(self.curPlayer)
 
@@ -90,7 +90,7 @@ class Coach:
                 end = time.time()
     
                 for eps in range(self.args.numEps):
-                    self.mcts = MCTS(self.game, self.nnet, self.args)   # reset search tree
+                    self.mcts = ISMCTS(self.nnet)   # reset search tree
                     iterationTrainExamples += self.executeEpisode()
                     # print(iterationTrainExamples)
                     # bookkeeping + plot progress

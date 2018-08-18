@@ -46,16 +46,16 @@ class YEET:
         if game_instance == None:
             game_instance = Board.game
 
-        if player == 1:
-            current_player = game_instance.players[0]
-        elif player == -1:
-            current_player = game_instance.players[1]
+        if player == game_instance.players[0]:
+            current_player = 1
+        elif player == game_instance.players[1]:
+            current_player = -1
         try:
-            self.b.performAction(action, current_player, game_instance)
+            self.b.performAction(action, player, game_instance)
         except GameOver:
             raise GameOver
-        next_state = self.b.getState(current_player, game_instance)
-        return (next_state, -player)
+        next_state = self.b.getState(player, game_instance)
+        return next_state, -current_player
 
     def getValidMoves(self, player, game_instance=Board.game):
         """

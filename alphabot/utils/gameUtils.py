@@ -84,7 +84,7 @@ class Board:
                 for target, card in enumerate(player.hero.attack_targets):
                     actions[18, target] = 1
             # add end turn
-        actions[19] = 1
+        actions[19,0] = 1
         return actions
 
     def performAction(self, a, player, game_instance):
@@ -130,8 +130,10 @@ class Board:
             #     print("Attempted to take an invalid action!\n \n \n")
             #     print(a)
             #     player.game.end_turn()
+            except IndexError:
+                player.game.end_turn()
             except GameOver:
-                raise GameOver
+                pass
 
 
     def getState(self, player, game_instance):
