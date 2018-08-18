@@ -32,10 +32,7 @@ class MCTS():
                    proportional to Nsa[(s,a)]**(1./temp)
         """
         for i in range(self.args.numMCTSSims):
-            try:
-                self.search(state, create_copy=True)
-            except GameOver:
-                break
+            self.search(state, create_copy=True)
 
         s = self.game.stringRepresentation(state)
 
@@ -142,10 +139,9 @@ class MCTS():
         next_s, next_player = self.game.getNextState(1, a, self.game_copy)
         next_s = self.game.getState(next_player, self.game_copy)
         try:
-            self.v = self.search(next_s, create_copy=False) #call recursively
-            v = self.v
+            v = self.search(next_s, create_copy=False) #call recursively
         except GameOver:
-            v = self.v
+            v = v
         if (s,a) in self.Qsa:
             self.Qsa[(s,a)] = (self.Nsa[(s,a)]*self.Qsa[(s,a)] + v)/(self.Nsa[(s,a)]+1)
             self.Nsa[(s,a)] += 1
