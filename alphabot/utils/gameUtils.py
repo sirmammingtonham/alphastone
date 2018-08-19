@@ -120,10 +120,11 @@ class Board:
                 else:
                     raise UnhandledAction
             except UnhandledAction:
-                print("Attempted to take an inappropriate action!\n")
+                print("Attempted to take an inappropriate action!")
                 print(a)
-            # except InvalidAction:
-            #     player.choice.choose(player.choice.cards[0])
+            except InvalidAction:
+                print("Attempted to do something I can't!")
+                player.game.end_turn()
             except IndexError:
                 player.game.end_turn()
             except GameOver:

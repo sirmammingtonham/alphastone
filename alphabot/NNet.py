@@ -48,7 +48,7 @@ class NNetWrapper():
             while batch_idx < int(len(examples)/args.batch_size):
                 sample_ids = np.random.randint(len(examples), size=args.batch_size)
                 states, pis, vs = list(zip(*[examples[i] for i in sample_ids]))
-                states = torch.FloatTensor(np.array(states).astype(np.float64))
+                states = torch.FloatTensor(np.array(states).astype(np.float64)).unsqueeze(1)
                 target_pis = torch.FloatTensor(np.array(pis))
                 target_vs = torch.FloatTensor(np.array(vs).astype(np.float64))
 
@@ -105,7 +105,8 @@ class NNetWrapper():
         # preparing input
         state = torch.FloatTensor(state.astype(np.float64)).unsqueeze(0).unsqueeze(0)
         if args.cuda: state = state.contiguous().cuda()
-        state = Variable(state, volatile=True)
+        with torch.no_grad():
+            state = Variable(state)
         # state = state.view(1, self.board_x, self.board_y)
 
         self.nnet.eval()
@@ -115,6 +116,7 @@ class NNetWrapper():
         return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]
 
     def loss_pi(self, targets, outputs):
+        targets = targets.view(-1, 21, 18)
         return -torch.sum(targets*outputs)/targets.size()[0]
 
     def loss_v(self, targets, outputs):
