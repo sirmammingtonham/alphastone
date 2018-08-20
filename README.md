@@ -1,7 +1,24 @@
-A Hearthstone ai implementation for the [fireplace simulator](https://github.com/jleclanche/fireplace/).
-Uses self-play to train and MCTS + NN for decision making.
-Based off the alphazero algorithm (and its implementation [here](https://github.com/suragnair/alpha-zero-general)), and a [similar project](https://github.com/peter1591/hearthstone-ai) by @peter1591.
+# Alphastone - Hearthstone Reinforcement Learning AI!
+A Hearthstone AI implementation for the [fireplace simulator](https://github.com/jleclanche/fireplace/).
+Uses self-play to train and Monte Carlo Tree Search + Neural Network for decision making.
+Based off the alphazero algorithm (and its implementation by @suragnair [alpha zero general](https://github.com/suragnair/alpha-zero-general)). 
 
-### A work in progress
+Hearthstone is an imperfect information game, meaning that some information is always hidden to both players. This is different from the game of go or chess where your opponent's pieces are visible at all times. As a result, we have to randomize all hidden information (opponent's hand and deck) before every search. MCTS is performed on a set of all the information available to the current player (information set mcts).
 
+The neural network is a small-ish resnet in PyTorch defined in [`alphanet.py`](./alphabot/alphanet.py). It is called to evaluate leaf nodes in the search tree and returns a matrix of action probabilities, and the predicted outcome.
 
+References:
+1. AlphaZero: Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm
+2. Information Set Monte Carlo Tree Search
+3. https://hearthstone.gamepedia.com/Hearthstone_Wiki
+
+## Experiments
+Currently training but only using classic card set ~294 cards, will update after a few days along with model
+
+## A work in progress
+This is my first large python project and is written by a high school student. I don't have formal coding experience so all help and critique is appreciated!
+
+**TO-DO**
+- [ ] CLEAN-UP CODE! there's a lot of comments and unnecessary bits from debugging
+- [ ] Change pit.py to allow for play against trained model
+- [ ] Implement ideas in ideas[#1](/../../issues/1)
