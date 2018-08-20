@@ -13,7 +13,7 @@ References:
 3. https://hearthstone.gamepedia.com/Hearthstone_Wiki
 
 ## Experiments
-Currently training but only using classic card set ~294 cards, will update after a few days along with model
+Currently training but only using basic card set (~150 cards) and priest vs rogue. Will update after a few days
 
 ## A work in progress
 This is my first large python project and is written by a high school student. I don't have formal coding experience so all help and critique is appreciated!
