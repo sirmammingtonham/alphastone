@@ -92,7 +92,7 @@ class MCTS():
 
         if s not in self.Es:
             self.Es[s] = self.game.getGameEnded(1, self.game_copy)
-        if self.game_copy.ended:
+        if self.game_copy.ended or self.game_copy.turn > 180:
             # terminal node
             return -self.Es[s]
 

@@ -65,6 +65,9 @@ class Board:
                     if card.requires_target():
                         for target, card in enumerate(card.targets):
                             actions[index, target] = 1
+                    elif card.must_choose_one:
+                        for choice, card in enumerate(card.choose_cards):
+                            actions[index, choice] = 1
                     else:
                         actions[index] = 1
             # add targets available to minions that can attack
@@ -102,6 +105,8 @@ class Board:
                 if 0 <= a[0] <= 9:
                     if player.hand[a[0]].requires_target():
                         player.hand[a[0]].play(player.hand[a[0]].targets[a[1]])
+                    elif player.hand[a[0]].must_choose_one:
+                        player.hand[a[0]].play(choose=player.hand[a[0]].choose_targets[a[1]])
                     else:
                         player.hand[a[0]].play()
                 elif 10 <= a[0] <= 16:
@@ -115,6 +120,8 @@ class Board:
                     player.hero.attack(player.hero.attack_targets[a[1]])
                 elif a[0] == 19:
                     player.game.end_turn()
+                elif a[0] == 20 and not player.choice:
+                    player.game.end_turn()
                 elif player.choice:
                     player.choice.choose(player.choice.cards[a[1]])
                 else:
@@ -122,6 +129,7 @@ class Board:
             except UnhandledAction:
                 print("Attempted to take an inappropriate action!")
                 print(a)
+                raise
             except InvalidAction:
                 print("Attempted to do something I can't!")
                 player.game.end_turn()

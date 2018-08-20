@@ -1,4 +1,11 @@
 from utils import Bar, AverageMeter
+import numpy as np
+
+
+
+
+
+
 import time
 
 class Arena():
@@ -36,23 +43,21 @@ class Arena():
         curPlayer = 1
         current_game = self.game.getInitGame()
         it = 0
-        while self.game.getGameEnded(curPlayer)==0:
+        while not current_game.ended or current_game.turn > 180:
             it+=1
             # if verbose:
             #     assert(self.display)
             #     print("Turn ", str(it), "Player ", str(curPlayer))
             #     self.display(current_game)
-            move = players[curPlayer+1](self.game.getState(current_game))
-            valids = self.game.getValidMoves(curPlayer)
-
-            if valids[actiona, actionb] == 0:
-                assert valids[actiona, actionb] > 0
-            current_game, curPlayer = self.game.getNextState(curPlayer, move)
+            pi = players[curPlayer+1](self.game.getState(current_game))
+            pi_reshape = np.reshape(pi, (21, 18))
+            action = np.where(pi_reshape==np.max(pi_reshape))
+            next_state, curPlayer = self.game.getNextState(curPlayer, (action[0][0], action[1][0]), current_game)
         # if verbose:
         #     assert(self.display)
         #     print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))
         #     self.display(board)
-        return self.game.getGameEnded(current_game, current_game.current_player)
+        return self.game.getGameEnded(curPlayer, current_game)
 
     def playGames(self, num, verbose=False):
         """

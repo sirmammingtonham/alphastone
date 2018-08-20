@@ -46,15 +46,11 @@ class YEET:
         if game_instance == None:
             game_instance = Board.game
 
-        if player == 1:
-            current_player = game_instance.players[0]
-        elif player == -1:
-            current_player = game_instance.players[1]
         try:
-            self.b.performAction(action, current_player, game_instance)
+            self.b.performAction(action, player, game_instance)
         except GameOver:
             raise GameOver
-        next_state = self.b.getState(current_player, game_instance)
+        next_state = self.b.getState(player, game_instance)
         return (next_state, -player)
 
     def getValidMoves(self, player, game_instance=Board.game):
@@ -102,6 +98,9 @@ class YEET:
         elif current_player.playstate == 5:
             return -1
         elif current_player.playstate == 6:
+            return 0.0001
+        elif game_instance.turn > 180:
+            game_instance.ended = True
             return 0.0001
         return 0
 
