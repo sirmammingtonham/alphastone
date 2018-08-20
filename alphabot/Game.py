@@ -25,7 +25,7 @@ class YEET:
             startBoard: a representation of the board (ideally this is the form
                         that will be the input to your neural network)
         """
-        self.b.initEnvi()
+        # self.b.isolateSet()
         self.b.initGame()
         return self.b.game
 

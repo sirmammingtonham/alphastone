@@ -6,6 +6,7 @@ from fireplace.game import Game
 from fireplace.player import Player
 from fireplace.utils import random_draft
 from hearthstone.enums import CardClass
+import pickle
 
 from .exceptions import UnhandledAction
 
@@ -22,19 +23,31 @@ class Board:
         self.num_actions = 23
         self.is_basic = True
 
-    def initEnvi(self):
+    def isolateSet(self, filename='notbasicset', set='CardSet.CORE'):
+        # isolates the specified card set for exclusion in drafting
         cards.db.initialize()
+        extraset = []
+        for index, card in cards.db.items():
+            if str(card.card_set) != set:
+                    extraset.append(card.id)
+        with open(f'{filename}.data', 'wb') as filehandle:
+            # store the data as binary data stream
+            pickle.dump(extraset, filehandle)
 
     def initGame(self):
         cards.db.initialize()
         if self.is_basic: #create quick simple game
+            with open('notbasic.data', 'rb') as f:
+                extra_set = pickle.load(f)
             p1 = 6 #priest
             p2 = 7 #rogue
+            deck1 = random_draft(CardClass(p1), exclude=extra_set)
+            deck2 = random_draft(CardClass(p2), exclude=extra_set)
         else:
             p1 = random.randint(1, 9)
             p2 = random.randint(1, 9)
-        deck1 = random_draft(CardClass(p1))
-        deck2 = random_draft(CardClass(p2))
+            deck1 = random_draft(CardClass(p1))
+            deck2 = random_draft(CardClass(p2))
         Board.players[0] = Player("Player1", deck1, CardClass(p1).default_hero)
         Board.players[1] = Player("Player2", deck2, CardClass(p2).default_hero)
         game = Game(players=self.players)

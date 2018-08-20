@@ -50,7 +50,7 @@ class MCTS():
         """ Create a deep clone of this game state, randomizing any information not visible to the specified observer player.
         """
         game_copy = copy.deepcopy(game)
-        enemy = game.current_player.opponent
+        enemy = game_copy.current_player.opponent
         random.shuffle(enemy.hand)
         random.shuffle(enemy.deck)
         # for idx, card in enumerate(enemy.hand):
@@ -86,7 +86,6 @@ class MCTS():
         """
         if create_copy:
             self.game_copy = self.cloneAndRandomize(self.game.b.game)
-            copy.deepcopy(self.game.b.game)
 
         s = self.game.stringRepresentation(state)
 
