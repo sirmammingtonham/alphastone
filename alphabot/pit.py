@@ -1,8 +1,7 @@
 import Arena
 from MCTS import MCTS
-from othello.OthelloGame import OthelloGame, display
-from othello.OthelloPlayers import *
-from othello.pytorch.NNet import NNetWrapper as NNet
+from Game import YEET as Game
+from NNet import NNetWrapper as NNet
 
 import numpy as np
 from utils import *
@@ -12,26 +11,72 @@ use this script to play any two agents against each other, or play manually with
 any agent.
 """
 
-g = OthelloGame(6)
+class HumanPlayer():
+    def __init__(self, game):
+        self.game = game.b.game
+
+    def play(self):
+        # display(board)
+        idxid = 0
+        you = self.game.b.game.current_player
+        print('Hand:')
+        for idx, card in enumerate(you.hand):
+            print(f'Name: {card.name}, Index: {idx}, Is Playable? {card.is_playable()}')
+
+        print('Field:')
+        for idx, card in enumerate(you.field):
+            print(f' Name: {card.name}, Index: {idx}, Can Attack? {card.can_attack()}')
+        for idx, card in enumerate(you.opponent.field):
+            print(f'Enemy: {card.name}')
+
+        if you.hero.power.is_usable():
+            print('Hero Power Available: Index: 17')
+        if you.hero.can_attack():
+            print('Attack with Weapon, Index: 18')
+        print('End Turn, Index: 19')
+
+        actionid = int(input('Enter action index: '))
+
+        if actionid <= 9:
+            if you.hand[actionid].requires_target():
+                print('Choose a target:')
+                for idx, target in enumerate(you.hand[actionid].targets):
+                    print(f'Name: {target.name}, Index: {idx}')
+                idxid = int(input('Enter idx:'))
+
+        elif 10 <= actionid <= 16:
+            print('Choose a target:')
+            for idx, target in enumerate(you.field[actionid-10].attack_targets):
+                print(f'Name: {target.name}, Index: {idx}')
+            idxid = int(input('Enter idx:'))
+
+        elif actionid == 17:
+            if you.hero.power.requires_target():
+                print('Choose a target:')
+                for idx, target in enumerate(you.hero.power.targets):
+                    print(f'Name: {target.name}, Index: {idx}')
+                idxid = int(input('Enter idx:'))
+
+        elif actionid == 18:
+            print('Choose a target:')
+            for idx, target in enumerate(you.hero.power.attack_targets):
+                print(f'Name: {target.name}, Index: {idx}')
+            idxid = int(input('Enter idx:'))
+
+        return actionid, idxid
+
+g = Game(is_basic=True)
 
 # all players
-rp = RandomPlayer(g).play
-gp = GreedyOthelloPlayer(g).play
-hp = HumanOthelloPlayer(g).play
+hp = HumanPlayer(g).play
 
 # nnet players
 n1 = NNet(g)
-n1.load_checkpoint('./pretrained_models/othello/pytorch/','6x100x25_best.pth.tar')
-args1 = dotdict({'numMCTSSims': 50, 'cpuct':1.0})
-mcts1 = MCTS(g, n1, args1)
-n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
+n1.load_checkpoint('./temp/','best.pth.tar')
+args = dotdict({'numMCTSSims': 50, 'cpuct':1.0})
+mcts = MCTS(g, n1, args)
+aip= lambda x: np.argmax(mcts.getActionProb(x, temp=0))
 
 
-#n2 = NNet(g)
-#n2.load_checkpoint('/dev/8x50x25/','best.pth.tar')
-#args2 = dotdict({'numMCTSSims': 25, 'cpuct':1.0})
-#mcts2 = MCTS(g, n2, args2)
-#n2p = lambda x: np.argmax(mcts2.getActionProb(x, temp=0))
-
-arena = Arena.Arena(n1p, hp, g, display=display)
+arena = Arena.Arena(aip, hp, g, display=display)
 print(arena.playGames(2, verbose=True))
