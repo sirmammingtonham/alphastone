@@ -91,7 +91,7 @@ class YEET:
         #     current_player = game_instance.players[0]
         # elif player == -1:
         #     current_player = game_instance.players[1]
-        current_player = game_instance.current_player
+        current_player = game_instance.players[0]
 
         if current_player.playstate == 4:
             return 1

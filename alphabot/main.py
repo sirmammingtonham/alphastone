@@ -2,22 +2,20 @@ from Coach import Coach
 from Game import YEET as Game
 from NNet import NNetWrapper as nn
 from utils import dotdict
-import fireplace.logging
 
 args = dotdict({
-    'numIters': 1000,
-    'numEps': 2,
+    'numIters': 50,
+    'numEps': 100,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
-    'numMCTSSims': 2,
-    'arenaCompare': 40,
+    'numMCTSSims': 25,
+    'arenaCompare': 20,
     'cpuct': 1,
-    'verbose': False,
 
     'checkpoint': './temp/',
-    'load_model': False,
-    'load_folder_file': ('/dev/models/8x100x50','best.pth.tar'),
+    'load_model': True,
+    'load_folder_file': ('./temp/','best.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
 
 })
@@ -29,10 +27,6 @@ if __name__=="__main__":
 
     if args.load_model:
         nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
-
-    if not args.verbose:
-        logger = fireplace.logging.get_logger("fireplace")
-        logger.propagate = False
 
     c = Coach(g, nnet, args)
     if args.load_model:

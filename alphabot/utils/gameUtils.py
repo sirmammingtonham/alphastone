@@ -113,7 +113,7 @@ class Board:
             game,
         """
         player = game_instance.current_player
-        if player.playstate == 1:
+        if not game_instance.ended:
             try:
                 if 0 <= a[0] <= 9:
                     if player.hand[a[0]].requires_target():
@@ -147,7 +147,10 @@ class Board:
                 print("Attempted to do something I can't!")
                 player.game.end_turn()
             except IndexError:
-                player.game.end_turn()
+                try:
+                    player.game.end_turn()
+                except GameOver:
+                    pass
             except GameOver:
                 pass
 

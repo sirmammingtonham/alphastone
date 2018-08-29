@@ -137,10 +137,11 @@ class MCTS():
 
         next_s, next_player = self.game.getNextState(1, a, self.game_copy)
         next_s = self.game.getState(next_player, self.game_copy)
-        try:
+        if not self.game_copy.ended:
             v = self.search(next_s, create_copy=False) #call recursively
-        except GameOver:
-            v = v
+        else:
+            v = -self.Es[s]
+
         if (s,a) in self.Qsa:
             self.Qsa[(s,a)] = (self.Nsa[(s,a)]*self.Qsa[(s,a)] + v)/(self.Nsa[(s,a)]+1)
             self.Nsa[(s,a)] += 1
