@@ -51,7 +51,10 @@ class YEET:
         except GameOver:
             raise GameOver
         next_state = self.b.getState(player, game_instance)
-        return (next_state, -player)
+        if action[0] != 19:
+            return next_state, player
+        else:
+            return next_state, -player
 
     def getValidMoves(self, player, game_instance=Board.game):
         """

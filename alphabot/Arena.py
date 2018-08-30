@@ -1,11 +1,6 @@
 from utils import Bar, AverageMeter
 import numpy as np
-
-
-
-
-
-
+from types import *
 import time
 
 class Arena():
@@ -49,10 +44,14 @@ class Arena():
             #     assert(self.display)
             #     print("Turn ", str(it), "Player ", str(curPlayer))
             #     self.display(current_game)
-            pi = players[curPlayer+1](self.game.getState(current_game))
-            pi_reshape = np.reshape(pi, (21, 18))
-            action = np.where(pi_reshape==np.max(pi_reshape))
-            next_state, curPlayer = self.game.getNextState(curPlayer, (action[0][0], action[1][0]), current_game)
+            if type(players[curPlayer+1]) is MethodType:
+                action = players[curPlayer + 1](current_game)
+                next_state, curPlayer = self.game.getNextState(curPlayer, (action), current_game)
+            else:
+                pi = players[curPlayer+1](self.game.getState(current_game))
+                pi_reshape = np.reshape(pi, (21, 18))
+                action = np.where(pi_reshape==np.max(pi_reshape))
+                next_state, curPlayer = self.game.getNextState(curPlayer, (action[0][0], action[1][0]), current_game)
         # if verbose:
         #     assert(self.display)
         #     print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))
