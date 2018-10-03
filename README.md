@@ -13,7 +13,7 @@ References:
 3. https://hearthstone.gamepedia.com/Hearthstone_Wiki
 
 ## Experiments
-Trained for 3 days but only using basic card set (~150 cards) and priest vs rogue. Best model shows some decision making and is able to beat a random agent ~80% of the time, but much much more training is needed.
+Trained a few different models over the course of 2 weeks but only using basic card set (~150 cards) and priest vs rogue. Best model was trained for around 3 days. It shows some decision making and is able to beat a random agent ~80% of the time, but much much more training is needed.
 
 ## A work in progress
 This is my first large python project and is written by a high school student. I don't have formal coding experience so all help and critique is appreciated!
