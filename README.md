@@ -20,5 +20,5 @@ This is my first large python project and is written by a high school student. I
 
 **TO-DO**
 - [ ] CLEAN-UP CODE! there's a lot of comments and unnecessary bits from debugging
-- [ ] Change pit.py to allow for play against trained model
+- [x] Change pit.py to allow for play against trained model
 - [ ] Implement ideas in ideas[#1](/../../issues/1)
