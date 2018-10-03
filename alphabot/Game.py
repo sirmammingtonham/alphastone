@@ -90,17 +90,13 @@ class YEET:
         if game_instance == None:
             game_instance = Board.game
 
-        # if player == 1:
-        #     current_player = game_instance.players[0]
-        # elif player == -1:
-        #     current_player = game_instance.players[1]
-        current_player = game_instance.players[0]
+        p1 = game_instance.player_to_start
 
-        if current_player.playstate == 4:
+        if p1.playstate == 4:
             return 1
-        elif current_player.playstate == 5:
+        elif p1.playstate == 5:
             return -1
-        elif current_player.playstate == 6:
+        elif p1.playstate == 6:
             return 0.0001
         elif game_instance.turn > 180:
             game_instance.ended = True

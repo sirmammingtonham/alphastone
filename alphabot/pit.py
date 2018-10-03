@@ -3,12 +3,21 @@ from MCTS import MCTS
 from Game import YEET
 from NNet import NNetWrapper as NNet
 import numpy as np
+import random
 from utils import *
 
 """
 use this script to play any two agents against each other, or play manually with
 any agent.
 """
+class RandomPlayer():
+    def __init__(self, game):
+        self.game = game
+
+    def play(self, game_instance):
+        agent = game_instance.current_player
+        choices = np.argwhere(self.game.getValidMoves(agent, game_instance) == 1)
+        return random.choice(choices)
 
 
 class HumanPlayer():
@@ -20,7 +29,7 @@ class HumanPlayer():
         idxid = 0
         you = game_instance.current_player
 
-        print(f'YOUR HEALTH: {you.hero.health}')
+        print(f'YOUR HERO: {you.hero} | HEALTH: {you.hero.health}')
         print(f'OPPONENT\'S HEALTH: {you.opponent.hero.health}')
         print(f'MANA: {you.mana}')
         print('\n----------Hand----------')
@@ -45,7 +54,7 @@ class HumanPlayer():
 
         actionid = int(input('Enter action index: '))
 
-        if actionid <= 9:
+        if 0 <= actionid <= 9:
             if you.hand[actionid].requires_target():
                 print('Choose a target:')
                 for idx, target in enumerate(you.hand[actionid].targets):
@@ -71,6 +80,10 @@ class HumanPlayer():
                 print(f'Name: {target}, Index: {idx}')
             idxid = int(input('Enter idx:'))
 
+        elif actionid == -1:
+            you.hero.to_be_destroyed = True
+            return 19, 0
+
         return actionid, idxid
 
 
@@ -78,15 +91,36 @@ g = YEET(is_basic=True)
 
 # all players
 hp = HumanPlayer(g).play
+rp = RandomPlayer(g).play
 
 # nnet players
 n1 = NNet(g)
-n1.load_checkpoint('./temp/', 'best.pth.tar')
+n1.load_checkpoint('./models/', '82%.pth.tar')
 args = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
-mcts = MCTS(g, n1, args)
-aip = lambda x: mcts.getActionProb(x, temp=0)
+mcts1 = MCTS(g, n1, args)
+a1p = lambda x: mcts1.getActionProb(x, temp=0)
 
-arena = Arena.Arena(aip, hp, g)
+n2 = NNet(g)
+n2.load_checkpoint('./tem/', 'best.pth.tar')
+args = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
+mcts2 = MCTS(g, n2, args)
+a2p = lambda x: mcts2.getActionProb(x, temp=0)
+
+arena = Arena.Arena(a1p, a2p, g)
 
 if __name__ == '__main__':
-    arena.playGames(2, verbose=True)
+    p1_won, p2_won, draws = arena.playGames(50, verbose=True)
+    print(f'\nResults: P1 {p1_won}, P2 {p2_won}, Draws {draws}')
+
+'''
+ai 21, random 29
+
+./temp, temp.pth.tar
+Results: P1 41, P2 9, Draws 0
+
+./tem, best.pth.tar
+Results: P1 10, P2 40, Draws 0
+
+./tem/, temp.pth.tar
+Results: P1 10, P2 40, Draws 0
+'''

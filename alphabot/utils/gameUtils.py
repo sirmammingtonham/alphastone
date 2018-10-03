@@ -59,6 +59,7 @@ class Board:
             player.choice.choose(*cards_to_mulligan)
 
         # self.start_player = game.current_player
+        game.player_to_start = game.current_player
         Board.game = game
         return game
 
