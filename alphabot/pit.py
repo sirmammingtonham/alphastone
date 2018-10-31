@@ -100,13 +100,13 @@ args = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
 mcts1 = MCTS(g, n1, args)
 a1p = lambda x: mcts1.getActionProb(x, temp=0)
 
-n2 = NNet(g)
-n2.load_checkpoint('./tem/', 'best.pth.tar')
-args = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
-mcts2 = MCTS(g, n2, args)
-a2p = lambda x: mcts2.getActionProb(x, temp=0)
+# n2 = NNet(g)
+# n2.load_checkpoint('./tem/', 'best.pth.tar')
+# args = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
+# mcts2 = MCTS(g, n2, args)
+# a2p = lambda x: mcts2.getActionProb(x, temp=0)
 
-arena = Arena.Arena(a1p, a2p, g)
+arena = Arena.Arena(a1p, hp, g)
 
 if __name__ == '__main__':
     p1_won, p2_won, draws = arena.playGames(50, verbose=True)
