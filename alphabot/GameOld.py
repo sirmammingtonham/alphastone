@@ -1,30 +1,173 @@
-import random
 import numpy as np
-import pickle
-
-from fireplace import cards
-from fireplace.exceptions import GameOver, InvalidAction
-from fireplace.game import Game
-from fireplace.player import Player
-from fireplace.utils import random_draft
-from hearthstone.enums import CardClass
-from utils import UnhandledAction
+from utils import Board, UnhandledAction
 from fireplace.exceptions import GameOver
 
 class YEET:
     """
+    This class specifies the base Game class. To define your own game, subclass
+    this class and implement the functions below. This works when the game is
+    two-player, adversarial and turn-based.
+
     Use 1 for player1 and -1 for player2.
     21 possible actions per move, and 8 possible targets per action + 1 if no targets
     is_basic = True initializes game between priest and rogue only
     """
-
+    
     def __init__(self, is_basic=True):
-        self.game = None
-        self.is_basic = True
+        self.num_actions = 21
         self.players = ['player1', 'player2']
         self.is_basic = is_basic
-        self.isolate = False
+        self.b = Board()
 
+    def getInitGame(self):
+        """
+        Returns:
+            startBoard: a representation of the board (ideally this is the form
+                        that will be the input to your neural network)
+        """
+        # self.b.isolateSet()
+        self.b.initGame()
+        return self.b.game
+
+    def getNextState(self, player, action, game_instance=Board.game):
+        """
+        Input:
+            board: current board (gameUtils)
+            player: current player (1 or -1)
+            action: action taken by current player
+
+        Returns:
+            nextBoard: board after applying action
+            nextPlayer: player who plays in the next turn (should be -player)
+
+            all actions executed by copy_player to preserve new game
+
+        """
+        if game_instance == None:
+            game_instance = Board.game
+
+        try:
+            self.b.performAction(action, player, game_instance)
+        except GameOver:
+            raise GameOver
+        next_state = self.b.getState(player, game_instance)
+        if action[0] != 19:
+            return next_state, player
+        else:
+            return next_state, -player
+
+    def getValidMoves(self, player, game_instance=Board.game):
+        """
+        Input:
+            board: current board
+            player: current player
+
+        Returns:
+            validMoves: a binary vector of length self.getActionSize(), 1 for
+                        moves that are valid from the current board and player,
+                        0 for invalid moves
+        """
+        # if player == 1:
+        #     current_player = self.b.players[0]
+        # elif player == -1:
+        #     current_player = self.b.players[1]
+        if game_instance == None:
+            game_instance = Board.game
+        return self.b.getValidMoves(game_instance)
+
+
+    def getGameEnded(self, game_instance=Board.game):
+        """
+        Input:
+            board: current board
+            player: current player (1 or -1)
+
+        Returns:
+            r: 0 if game has not ended. 1 if player won, -1 if player lost,
+               small non-zero value for draw.
+        """
+        if game_instance == None:
+            game_instance = Board.game
+
+        p1 = game_instance.player_to_start
+
+        if p1.playstate == 4:
+            return 1
+        elif p1.playstate == 5:
+            return -1
+        elif p1.playstate == 6:
+            return 0.0001
+        elif game_instance.turn > 180:
+            game_instance.ended = True
+            return 0.0001
+        return 0
+
+    def getState(self, player, game_instance=Board.game):
+        """
+        Input:
+            board: current board
+            player: current player (1 or -1)
+
+        Returns:
+            state: see gameUtils.getState for info
+        """
+        # if player == 1:
+        #     current_player = self.b.players[0]
+        # elif player == -1:
+        #     current_player = self.b.players[1]
+        if game_instance == None:
+            game_instance = Board.game
+
+        return self.b.getState(player, game_instance)
+        # return b.game
+
+    def getSymmetries(self, state, pi):
+        """
+        Input:
+            board: current board
+            pi: policy vector of size self.getActionSize()
+
+        Returns:
+            symmForms: a list of [(board,pi)] where each tuple is a symmetrical
+                       form of the board and the corresponding pi vector. This
+                       is used when training the neural network from examples.
+        """
+        # assert(len(pi) == len(state))
+        assert(len(pi) == 168)
+        pi_board = np.reshape(pi, (21, 9))
+        l = []
+
+        for i in range(1, 5):
+            for j in [True, False]:
+                newS = np.rot90(state, i)
+                newPi = np.rot90(pi_board, i)
+                if j:
+                    newS = np.fliplr(newS)
+                    newPi = np.fliplr(newPi)
+                l += [(newS, list(newPi.ravel()) + [pi[-1]])]
+        return l
+
+    def stringRepresentation(self, state):
+        """
+        Input:
+            state: np array of state
+
+        Returns:
+            boardString: a quick conversion of board to a string format.
+                         Required by MCTS for hashing.
+        """
+        return state.tostring()
+class Board:
+    """
+    This class interacts with Game.py to initialize the game,
+    return states, and return actions
+    """
+    game = None
+    players = ['', '']
+
+    def __init__(self):
+        self.num_actions = 23
+        self.is_basic = True
 
     def isolateSet(self, filename='notbasicset', set='CardSet.CORE'):
         # isolates the specified card set for exclusion in drafting
@@ -37,16 +180,7 @@ class YEET:
             # store the data as binary data stream
             pickle.dump(extraset, filehandle)
 
-
-    def getInitGame(self):
-        """
-        Returns:
-            startBoard: a representation of the board (ideally this is the form
-                        that will be the input to your neural network)
-        """
-        if self.isolate:
-            self.isolateSet()
-
+    def initGame(self):
         cards.db.initialize()
         if self.is_basic: #create quick simple game
             with open('notbasic.data', 'rb') as f:
@@ -60,8 +194,8 @@ class YEET:
             p2 = random.randint(1, 9)
             deck1 = random_draft(CardClass(p1))
             deck2 = random_draft(CardClass(p2))
-        self.players[0] = Player("Player1", deck1, CardClass(p1).default_hero)
-        self.players[1] = Player("Player2", deck2, CardClass(p2).default_hero)
+        Board.players[0] = Player("Player1", deck1, CardClass(p1).default_hero)
+        Board.players[1] = Player("Player2", deck2, CardClass(p2).default_hero)
         game = Game(players=self.players)
         game.start()
 
@@ -70,54 +204,19 @@ class YEET:
             cards_to_mulligan = random.sample(player.choice.cards, 0)
             player.choice.choose(*cards_to_mulligan)
 
+        # self.start_player = game.current_player
         game.player_to_start = game.current_player
-        self.game = game
+        Board.game = game
         return game
 
-
-    def getNextState(self, player, action, game_instance=self.game):
-        """
-        Input:
-            player: current player (1 or -1)
-            action: action taken by current player
-            game_instance: the game object (actual game or deepcopy for MCTS)
-
-        Returns:
-            next_state: state after applying action
-            next_player: player who plays in the next turn (should be -player if the action is end turn)
-        """
-        if game_instance == None:
-            game_instance = self.game
-
-        try:
-            self.performAction(action, game_instance)
-        except GameOver:
-            raise GameOver
-
-        next_state = self.getState(game_instance)
-
-        if action[0] != 19:
-            return next_state, player
-        else:
-            return next_state, -player
-
-
-    def getValidMoves(self, game_instance=self.game):
-        """
-        Input:
-            game_instance: the game object (actual game or deepcopy for MCTS)
-
-        Returns:
-            validMoves: a 21x18 binary matrix, 1 for
-                        moves that are valid from the current game instance and player,
-                        0 for invalid moves
-        """
+    def getValidMoves(self, game_instance):
         actions = np.zeros((21,18))
         player = game_instance.current_player
         #If the player is being given a choice, return only valid choices
         if player.choice:
             for index, card in enumerate(player.choice.cards):
                 actions[20, index] = 1
+                #actions.append(("choose", card, None))
 
         else:
             # add cards in hand
@@ -151,15 +250,14 @@ class YEET:
             actions[19,1] = 1
         return actions
 
-
-    def performAction(self, a, game_instance):
+    def performAction(self, a, player, game_instance):
         """
-        utility to perform an action tuple
-
-        Input:
+        utilty to convert an action tuple
+        into an action input
+        Args:
             a, a tuple representing index of action
-            game_instance: the game object (actual game or deepcopy for MCTS)
-
+            player,
+            game,
         """
         player = game_instance.current_player
         if not game_instance.ended:
@@ -204,37 +302,13 @@ class YEET:
                 pass
 
 
-    def getGameEnded(self, game_instance=self.game):
-        """
-        Input:
-            game_instance: the game object (actual game or deepcopy for MCTS)
-
-        Returns:
-            r: 0 if game has not ended. 1 if starting player won, -1 if player lost,
-               small non-zero value for draw.
-        """
-        if game_instance == None:
-            game_instance = self.game
-
-        p1 = game_instance.player_to_start
-
-        if p1.playstate == 4:
-            return 1
-        elif p1.playstate == 5:
-            return -1
-        elif p1.playstate == 6:
-            return 0.0001
-        elif game_instance.turn > 180:
-            game_instance.ended = True
-            return 0.0001
-        return 0
-
-    def getState(self, game_instance=self.game):
+    def getState(self, player, game_instance):
         """
         Args:
-            game_instance: the game object (actual game or deepcopy for MCTS)
+            game, the current game object
+            player, the player from whose perspective to analyze the state
         return:
-            a 263 length numpy array of features extracted from the
+            a numpy array features extracted from the
             supplied game.
         """
         s = np.zeros(263, dtype=np.int32)
@@ -329,41 +403,3 @@ class YEET:
                 s[i + 8] = p1.hand[j].cost
             i += 9
         return s
-
-
-    def getSymmetries(self, state, pi):
-        """
-        Input:
-            state: current state
-            pi: policy vector of size self.getActionSize()
-
-        Returns:
-            symmForms: a list of [(actions,pi)] where each tuple is a symmetrical
-                       form of the actions and the corresponding pi vector. This
-                       is used when training the neural network from examples.
-        """
-        assert(len(pi) == 168)
-        pi_reshape = np.reshape(pi, (21, 9))
-        l = []
-
-        for i in range(1, 5):
-            for j in [True, False]:
-                newS = np.rot90(state, i)
-                newPi = np.rot90(pi_reshape, i)
-                if j:
-                    newS = np.fliplr(newS)
-                    newPi = np.fliplr(newPi)
-                l += [(newS, list(newPi.ravel()) + [pi[-1]])]
-        return l
-
-
-    def stringRepresentation(self, state):
-        """
-        Input:
-            state: np array of state
-
-        Returns:
-            stateString: a quick conversion of state to a string format.
-                         Required by MCTS for hashing.
-        """
-        return state.tostring()

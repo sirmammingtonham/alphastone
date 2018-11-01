@@ -16,7 +16,7 @@ class RandomPlayer():
 
     def play(self, game_instance):
         agent = game_instance.current_player
-        choices = np.argwhere(self.game.getValidMoves(agent, game_instance) == 1)
+        choices = np.argwhere(self.game.getValidMoves(game_instance) == 1)
         return random.choice(choices)
 
 

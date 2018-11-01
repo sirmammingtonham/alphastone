@@ -51,7 +51,7 @@ class Coach:
             pi = self.mcts.getActionProb(state, temp=temp)
             pi_reshape = np.reshape(pi, (21, 18))
             # sym = self.game.getSymmetries(state, pi)
-            s = self.game.getState(self.curPlayer)
+            s = self.game.getState()
             trainExamples.append([s, self.curPlayer, pi, None])
             # for b,p in sym:
             #     trainExamples.append([b, self.curPlayer, p, None])
@@ -59,7 +59,7 @@ class Coach:
             a, b = np.unravel_index(np.ravel(action, np.asarray(pi).shape), pi_reshape.shape)
             current_game, self.curPlayer = self.game.getNextState(self.curPlayer, (a[0], b[0]))
 
-            r = self.game.getGameEnded(self.curPlayer)
+            r = self.game.getGameEnded()
 
             if r!=0:
                 return [(x[0],x[2],r*((-1)**(x[1]!=self.curPlayer))) for x in trainExamples]

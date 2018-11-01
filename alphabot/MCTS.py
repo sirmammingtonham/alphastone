@@ -90,7 +90,7 @@ class MCTS():
         s = self.game.stringRepresentation(state)
 
         if s not in self.Es:
-            self.Es[s] = self.game.getGameEnded(1, self.game_copy)
+            self.Es[s] = self.game.getGameEnded(self.game_copy)
         if self.game_copy.ended or self.game_copy.turn > 180:
             # terminal node
             return -self.Es[s]
@@ -98,7 +98,7 @@ class MCTS():
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.nnet.predict(state)
-            valids = self.game.getValidMoves(1, self.game_copy)
+            valids = self.game.getValidMoves(self.game_copy)
             self.Ps[s] = self.Ps[s]*valids      # masking invalid moves
             sum_Ps_s = np.sum(self.Ps[s])
             if sum_Ps_s > 0:
@@ -136,7 +136,7 @@ class MCTS():
         a = best_act
 
         next_s, next_player = self.game.getNextState(1, a, self.game_copy)
-        next_s = self.game.getState(next_player, self.game_copy)
+        next_s = self.game.getState(self.game_copy)
         if not self.game_copy.ended:
             v = self.search(next_s, create_copy=False) #call recursively
         else:
